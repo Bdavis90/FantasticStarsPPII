@@ -11,7 +11,7 @@ public class Entity : MonoBehaviour, IDamageable
     [SerializeField] ushort spawnID;
 
     [Header("----- Attributes -----")]
-    [SerializeField] bool isAlive;
+    //[SerializeField] bool isAlive;
     [SerializeField] int Health;
 
     void Start()
@@ -35,34 +35,40 @@ public class Entity : MonoBehaviour, IDamageable
         return spawnID;
     }
 
-    public bool GetAlive()
-    {
-        return isAlive;
-    }
-    public bool takeDamage(int _damage)
+    public void takeDamage(int _damage)
     {
 
         Health -= _damage;
 
         if(Health <= 0)
         {
+            //If Dead, Remove from Game Manager spawns
+            //This is the only Code that should delete from Game Manager
             gameManager.instance.spawns.Remove(spawnID);
-            isAlive = false;
 
             faction = Entity_Faction.Corpse;
             gameObject.name = "(Corpse)" + gameObject.name;
-            if(GetComponent<EntityAI>() != null)
+
+
+            GetComponent<CharacterController>().enabled = false;
+            if (GetComponent<EntityAI>() != null)
             {
                 GetComponent<EntityAI>().SetAlive(false);
+                StartCoroutine(Corpse());
             }
-
-            StartCoroutine(Corpse());
+            else
+            {
+                //Respawn Player
+                //Enable Controller
+            }
+            
+            
             //Simple Death Animation          
-            //gameObject.transform.Rotate(Vector3.right * 90);
-            gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
+            gameObject.transform.Rotate(Vector3.right * 90);
+            //gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
         }
 
-        return isAlive;
+        //return isAlive;
     }
 
     IEnumerator Corpse()

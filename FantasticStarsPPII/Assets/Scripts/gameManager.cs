@@ -51,4 +51,8 @@ public class gameManager : MonoBehaviour
         spawns.Add(_key, _objectPair);
     }
 
+    public bool ContainsSpawn(ushort _ID)
+    {
+        return spawns.ContainsKey(_ID);
+    }
 }

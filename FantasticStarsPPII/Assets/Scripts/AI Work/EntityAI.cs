@@ -4,49 +4,52 @@ using UnityEngine;
 
 public class EntityAI : MonoBehaviour
 {
-    private CharacterController controller;
-    /*******************************************/
-    /*         Prototype / Debug Members       */
-    /*******************************************/
-    private GameObject FOV_Object;
-    private LineRenderer FOV_LR;
-    private bool isAlive = true;
-    private bool cleanupOnDeath = true;
-    /*******************************************/
-    /*         Object Detection Members        */
-    /*******************************************/
-    [Header("----- Entity Lists -----")]
-    #region Members for Detection Lists
-    [SerializeField] ushort spawnID;
+    [Header("----- Adjustable Fields -----")]
+    [SerializeField] GameObject FOV_Object;
+    [SerializeField] float fieldOfView;
+    [SerializeField] float viewDistance;
     [SerializeField] float objectDetectionRange;
+    [SerializeField] float runSpeed;
+    [SerializeField] bool HunterMode;
+    [SerializeField] bool PatrolMode;
+    [SerializeField] bool LookoutMode;
+    
+    [Header("----- Character General -----")]
+    [SerializeField] ushort spawnID;
+    [SerializeField] bool isAlive = true;
+    private CharacterController controller;
+    private LineRenderer FOV_LR;
+    private bool cleanupOnDeath = true;
+    
+    [Header("----- Character Lists -----")]
+    [SerializeField] ushort Target;
     [SerializeField] List<ushort> HitList = new List<ushort>();
     [SerializeField] List<ushort> Enemies = new List<ushort>();
     [SerializeField] List<ushort> Allies = new List<ushort>();
-    //[SerializeField] List<GameObject> hitList;
-    //[SerializeField] List<GameObject> enemies;
-    //[SerializeField] List<GameObject> allies;
-    [SerializeField] List<GameObject> environmentObjects;
-    [SerializeField] List<GameObject> abilityObjects;
-    #endregion
+    //[SerializeField] List<GameObject> environmentObjects;
+    //[SerializeField] List<GameObject> abilityObjects;
 
     [Header("----- Destinations -----")]
-    [SerializeField] ushort Target;
-    //[SerializeField] GameObject target;
+    [SerializeField] Vector3 homePoint;
     [SerializeField] Vector3 nextMoveDestination;
     [SerializeField] float destinationAngle;
     [SerializeField] float targetAngle;
     [SerializeField] bool hasTarget;
-    [SerializeField] Vector3 homePoint;
+
+    [Header("----- Home Parameters -----")]
     [SerializeField] float homePointDirection;
     [SerializeField] float homePointDelay;
-    private float rotationSpeed = 5;
-
+    
     [Header("----- Modes -----")]
     [SerializeField] bool CombatMode;
     [SerializeField] bool WanderMode;
-    [SerializeField] bool HunterMode;
-    [SerializeField] bool PatrolMode;
-    [SerializeField] bool LookoutMode;
+
+    [Header("----- Character Controller Fields -----")]
+    [SerializeField] float rotationSpeed = 5;
+    [SerializeField] float buoyancyValue = 40;
+    [SerializeField] float jumpForce = 2;
+    [SerializeField] float characterFallSpeed;
+    private Vector3 moveInputs = Vector3.zero;
 
     [Header("----- Head Pivot Parameters -----")]
     [SerializeField] float headPivotTime = 2;
@@ -55,15 +58,7 @@ public class EntityAI : MonoBehaviour
     [SerializeField] float headPivot_OffsetCur;
     [SerializeField] float headPivotSpeed;
 
-    [Header("----- Field of View Data -----")]
-    [SerializeField] float fieldOfView;
-    [SerializeField] float viewDistance;
-    [SerializeField] float runSpeed;
-    [Header("----- Character Controller Fields -----")]
-    private Vector3 moveInputs = Vector3.zero;
-    [SerializeField] float buoyancyValue = 40;
-    [SerializeField] float jumpForce = 2;
-    [SerializeField] float characterFallSpeed;
+
 
     public void SetSpawnID(ushort _id)
     {
@@ -111,9 +106,19 @@ public class EntityAI : MonoBehaviour
         //Only do if alive
         if (isAlive)
         {
+            //Debug Code - Field of View sight Lines
             FOV_Prototype_Update();
-            //Behavior to Detect and Engage Enemy
-            Check_EnterCombat();
+            //Detect Enemy
+            Check_EnterCombatMode();
+
+            //Test Code:: Keep Allies List up to date
+            List<ushort> newAllies = new List<ushort>();
+            foreach(ushort ally in Allies)
+            {
+                if (gameManager.instance.ContainsSpawn(ally))
+                    newAllies.Add(ally);
+            }
+            Allies = newAllies;
 
             if (CombatMode)
             {
@@ -126,13 +131,10 @@ public class EntityAI : MonoBehaviour
                     homePointDelay = 2;
                 }
 
-                //Combat Mode means the Targets have been identified
                 //Entity needs to relocate from his position to a destination.
 
                 //Set Destination. Target may not always be the player
                 //TODO:: Fancy Destionion logic needed
-                //DELETE THIS
-                //nextMoveDestination = target.transform.position;
                 if (VerfiyTargetSpawnExists())
                 {
                     nextMoveDestination = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().transform.position;
@@ -144,18 +146,16 @@ public class EntityAI : MonoBehaviour
                 //Get Angle to Destination and Get angle to target
                 //Head will look at destination point or its target
                 destinationAngle = RelativeAngle(nextMoveDestination);
-                //TODO Not the right reference Points because the target is always the destination right now.
+                //TODO:: Not the right reference Points because the target is always the destination right now.
                 targetAngle = RelativeAngle(nextMoveDestination);
 
                 headPivotSpeed = 40;
                 if (Mathf.Abs(targetAngle) > headPivot_OffsetMax)
                 {
                     SmoothHeading(destinationAngle);
-                    //headPivot_OffsetCur = destinationAngle;
                 }
                 else
                     SmoothHeading(targetAngle);
-                //headPivot_OffsetCur = targetAngle;
 
                 //Rotate towards Destination
                 //if((int)destinationAngle > 0)
@@ -170,28 +170,12 @@ public class EntityAI : MonoBehaviour
                 }
                 else
                 {
-
+                    
                     if (VerfiyTargetSpawnExists())
                     {
-                        if (true)//(target.GetComponent<IDamageable>() != null)
-                        {
-                            //Get Target Damageable
-                            IDamageable damageable = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
-                            if (damageable.takeDamage(3))
-                            {
-                                //if Alive                     
-                            }
-                            else
-                            {
-                                //if Dead    
-                                VerfiyTargetSpawnExists();
-                                Target = 0;
-                                //nextMoveDestination = homePoint;
-                                CombatMode = false;
-                                //When Target Dies, Turn off Combat Mode
-                                //The next fixed frame will determine hit list, destination and modes.
-                            }
-                        }
+                        IDamageable damageable = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
+                        damageable.takeDamage(1);
+
                     }
 
 
@@ -223,8 +207,7 @@ public class EntityAI : MonoBehaviour
             }
             else
             {
-
-
+                //Path Back to Home Point
                 if (homePointDelay > 0)
                 {
                     homePointDelay -= Time.fixedDeltaTime;
@@ -263,7 +246,7 @@ public class EntityAI : MonoBehaviour
             }
         }
         
-        //moveInput
+        //simple Gravity
         if (controller.isGrounded)
         {
             characterFallSpeed = 0;
@@ -286,7 +269,7 @@ public class EntityAI : MonoBehaviour
         /*             Behavior Methods            */
         /*******************************************/
     #region Check Enemy positions from List
-    private void Check_EnterCombat()
+    private void Check_EnterCombatMode()
     {
         //Only Check Enemies List if Not in Combat
         if (!CombatMode)
@@ -312,12 +295,14 @@ public class EntityAI : MonoBehaviour
             }
             else if (Enemies.Count > 0)
             {
-
+                List<ushort> UpdatedList = new List<ushort>(4);
                 //Check Enemy List
                 foreach(ushort enemyID in Enemies)
                 {
                     if (gameManager.instance.spawns.ContainsKey(enemyID))
                     {
+                        UpdatedList.Add(enemyID);
+
                         GameObject enemy = gameManager.instance.spawns.GetValueOrDefault(enemyID).GetGameObject();
                         Vector3 enemyDirection = RetrieveObjectDirection(enemy.transform.position);
                         float globalDisplacement = GlobalAngularDisplacement(enemyDirection);
@@ -326,52 +311,27 @@ public class EntityAI : MonoBehaviour
                         //If Enemy Detected, Enter Combat Mode
                         if (enemyDirection.magnitude <= viewDistance && Mathf.Abs(localDisplacement) + headPivot_OffsetCur <= (fieldOfView / 2))
                         {
-                            RaycastHit hit;
-                            Physics.Raycast(transform.position, enemyDirection.normalized, out hit);
-                            if (hit.transform.gameObject == enemy.gameObject)
+                            
+                            if (gameManager.instance.spawns.ContainsKey(enemyID))
                             {
-                                Target = enemyID;
-                                CombatMode = true;
-                                HitList.Add(enemyID);
+                                RaycastHit hit;
+                                Physics.Raycast(transform.position, enemyDirection.normalized, out hit);
+                                //TODO:: Null Exception Thrown when Player Dies in stress Test
+                                if (hit.transform.gameObject == enemy)
+                                {
+                                    Target = enemyID;
+                                    CombatMode = true;
+                                    HitList.Add(enemyID);
+                                }
                             }
+
                         }
                     }
-                    else
-                    {
-                        //Enemies.Remove(enemyID);
-                    }
                 }
+                Enemies = UpdatedList;
             }
         }
     }
-
-    //DELETE CODE
-    //private void SearchListForEnemies(List<GameObject> enemies)
-    //{
-    //    foreach (GameObject enemy in enemies)
-    //    {
-    //        //Gather Cooridinates Data on Enemies
-    //        Vector3 enemyDirection = RetrieveObjectDirection(enemy.transform.position);
-    //        float globalDisplacement = GlobalAngularDisplacement(enemyDirection);
-    //        float localDisplacement = RelativeAngle(globalDisplacement);
-
-    //        //If Enemy Detected, Enter Combat Mode
-    //        if (enemyDirection.magnitude <= viewDistance && Mathf.Abs(localDisplacement) + headPivot_OffsetCur <= (fieldOfView / 2))
-    //        {
-    //            RaycastHit hit;
-    //            //TODO:: Raycast to Detect Line of Sight ??
-    //            Physics.Raycast(transform.position, enemyDirection.normalized, out hit);
-    //            Debug.Log(hit.transform.gameObject);
-    //            if (hit.transform.gameObject == enemy.gameObject)
-    //            {
-                    
-    //                target = enemy;
-    //                CombatMode = true;
-    //                hitList.Add(enemy);
-    //            }
-    //        }
-    //    }
-    //}
 
     /*******************************************/
     /*           LookoutMode Behavior          */
@@ -439,14 +399,17 @@ public class EntityAI : MonoBehaviour
         //Debug.Log("Trigger Entered");
         if(other.gameObject.GetComponent<Entity>() != null)
         {
+            //Debug.Log(gameManager.instance.ContainsSpawn(spawnID));
             
             ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
+            //Debug.Log(gameManager.instance.ContainsSpawn(otherSpawnID));
             EntityManager otherEntity;
             EntityManager thisEntity = gameManager.instance.spawns.GetValueOrDefault(spawnID);
 
             if(gameManager.instance.spawns.TryGetValue(otherSpawnID, out otherEntity))
             {
-                if (otherEntity.GetEntity().faction == Entity_Faction.Corpse)
+                //if Either is dead
+                if (otherEntity.GetEntity().faction == Entity_Faction.Corpse || !isAlive)
                 {
                     //Ignore Corpses for Now
                     //Debug.Log("Corpse"); 
@@ -600,8 +563,8 @@ public class EntityAI : MonoBehaviour
     /*******************************************/
     private void FOV_Prototype_Initialization()
     {
-        FOV_Object = new GameObject();
-        FOV_Object.name = "Entity FOV";
+        //FOV_Object = new GameObject();
+        //FOV_Object.name = "Entity FOV";
         FOV_LR = FOV_Object.AddComponent<LineRenderer>();
 
         FOV_LR.name = "FOV_Draw";
