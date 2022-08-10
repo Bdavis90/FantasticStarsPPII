@@ -6,7 +6,6 @@ public class Entity : MonoBehaviour, IDamageable
 {
     public Entity_Class classType;
     public Entity_Faction faction;
-    //public Entity_Type type;
 
     [SerializeField] ushort spawnID;
 
@@ -18,9 +17,7 @@ public class Entity : MonoBehaviour, IDamageable
     {
         //Generate ID and Add to GameManager
         spawnID = gameManager.instance.GenerateCharacterID();
-
-        
-        
+ 
         gameManager.instance.AddCharacter_to_GameManager(spawnID, new EntityManager(gameObject, this));
         //if Spawn is a NPC
         if(GetComponent<EntityAI>() != null)
@@ -44,7 +41,7 @@ public class Entity : MonoBehaviour, IDamageable
         {
             //If Dead, Remove from Game Manager spawns
             //This is the only Code that should delete from Game Manager
-            gameManager.instance.spawns.Remove(spawnID);
+            gameManager.instance.entitySpawns.Remove(spawnID);
 
             faction = Entity_Faction.Corpse;
             gameObject.name = "(Corpse)" + gameObject.name;
@@ -72,8 +69,7 @@ public class Entity : MonoBehaviour, IDamageable
     }
 
     IEnumerator Corpse()
-    {
-        
+    {      
         yield return new WaitForSeconds(5);
         Destroy(gameObject);
     }
@@ -92,11 +88,4 @@ public enum Entity_Faction
     Corpse = 0,
     Dwarves = 100,
     Orglings = 200
-}
-
-public enum Entity_Type
-{
-    Environment = 0,
-    Person = 1,
-    Ability = 2
 }

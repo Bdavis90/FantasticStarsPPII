@@ -59,7 +59,10 @@ public class EntityAI : MonoBehaviour
     [SerializeField] float headPivotSpeed;
 
 
-
+    /*******************************************/
+    /*          Getters and Setters            */
+    /*******************************************/
+    #region Setters
     public void SetSpawnID(ushort _id)
     {
         spawnID = _id;
@@ -69,7 +72,7 @@ public class EntityAI : MonoBehaviour
     {
         isAlive = _value;
     }
-
+    #endregion
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -111,14 +114,19 @@ public class EntityAI : MonoBehaviour
             //Detect Enemy
             Check_EnterCombatMode();
 
-            //Test Code:: Keep Allies List up to date
-            List<ushort> newAllies = new List<ushort>();
-            foreach(ushort ally in Allies)
+            //Temp Code:: to Keep allies tracking uptodate.
+            if(Allies.Count > 0)
             {
-                if (gameManager.instance.ContainsSpawn(ally))
-                    newAllies.Add(ally);
+                List<ushort> newAllies = new List<ushort>();
+                foreach (ushort ally in Allies)
+                {
+                    if (gameManager.instance.ContainsSpawn(ally))
+                        newAllies.Add(ally);
+                }
+                Allies = newAllies;
             }
-            Allies = newAllies;
+
+
 
             if (CombatMode)
             {
@@ -131,57 +139,34 @@ public class EntityAI : MonoBehaviour
                     homePointDelay = 2;
                 }
 
-                //Entity needs to relocate from his position to a destination.
-
                 //Set Destination. Target may not always be the player
-                //TODO:: Fancy Destionion logic needed
-                if (VerfiyTargetSpawnExists())
+                //TODO:: Fancy Destination logic needed
+                if (VerfiyTargetSpawnExists()) 
                 {
-                    nextMoveDestination = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().transform.position;
+                    nextMoveDestination = gameManager.instance.GetIDPosition(Target); // <----- TODO:: Temporary PlaceHolder solution
+                    destinationAngle = RelativeAngle(nextMoveDestination);
                 }
 
-                //It seem my Move might able to be put in a Imoveable or method
-                //Each else will only need to solve destinations.
-
-                //Get Angle to Destination and Get angle to target
-                //Head will look at destination point or its target
-                destinationAngle = RelativeAngle(nextMoveDestination);
-                //TODO:: Not the right reference Points because the target is always the destination right now.
-                targetAngle = RelativeAngle(nextMoveDestination);
-
-                headPivotSpeed = 40;
-                if (Mathf.Abs(targetAngle) > headPivot_OffsetMax)
-                {
-                    SmoothHeading(destinationAngle);
-                }
-                else
-                    SmoothHeading(targetAngle);
+                //Combat Head Rotation keeps rotated on Target
+                LockHeadToTarget(destinationAngle);
 
                 //Rotate towards Destination
                 //if((int)destinationAngle > 0)
                 transform.Rotate(Vector3.up, destinationAngle * rotationSpeed * Time.fixedDeltaTime);
 
-                //Move to Destination
-                //Defined destination will be different for enemy types.
-
+                //Move to Destination or Attack Here
                 if (RetrieveObjectDirection(nextMoveDestination).magnitude > 2)
                 {
                     controller.Move(transform.forward * runSpeed * Time.fixedDeltaTime);
                 }
                 else
-                {
-                    
+                {                
                     if (VerfiyTargetSpawnExists())
                     {
-                        IDamageable damageable = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
+                        IDamageable damageable = gameManager.instance.entitySpawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
                         damageable.takeDamage(1);
-
                     }
-
-
                 }
-
-                //MoveObject(transform.forward * runSpeed * Time.deltaTime);
 
             }
             else if (WanderMode)
@@ -205,7 +190,7 @@ public class EntityAI : MonoBehaviour
                     DoLookOutMode();
                 }
             }
-            else
+            else //End of Combat Logic Loop
             {
                 //Path Back to Home Point
                 if (homePointDelay > 0)
@@ -214,7 +199,6 @@ public class EntityAI : MonoBehaviour
                 }
                 else
                 {
-
                     //TODO:: Magnitude is Compensating for the Y axis because I'm using Primitive models to test.
                     if (RetrieveObjectDirection(homePoint).magnitude > 0.2f)
                     {
@@ -236,9 +220,7 @@ public class EntityAI : MonoBehaviour
                         {
                             transform.Rotate(Vector3.up, RelativeAngle(homePointDirection));
                             WanderMode = true;
-
                         }
-
                     }
 
                 }
@@ -256,18 +238,87 @@ public class EntityAI : MonoBehaviour
 
         moveInputs = transform.up * characterFallSpeed;
         controller.Move(moveInputs);
-
-
     }
+    /*******************************************/
+    /*          (Collider Triggers)            */
+    /*******************************************/
+    #region AI List Managment
+        /*******************************************/
+        /*     (Trigger)Add Objects to Lists       */
+        /*******************************************/
+    #region List Updater(Add)
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.GetComponent<Entity>() != null)
+        {
+            ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
+            EntityManager otherEntity;
+            EntityManager thisEntity = gameManager.instance.entitySpawns.GetValueOrDefault(spawnID);
+
+            if (gameManager.instance.entitySpawns.TryGetValue(otherSpawnID, out otherEntity))
+            {
+                //if Either is dead
+                if (otherEntity.GetEntity().faction == Entity_Faction.Corpse || !isAlive)
+                {
+                    //Ignore Corpses for Now
+                    //Debug.Log("Corpse"); 
+                }
+                else if (otherEntity.GetEntity().faction == thisEntity.GetEntity().faction)
+                {
+                    //Not Self
+                    if (otherSpawnID != spawnID)
+                    {
+                        //Its an Ally
+                        if (!Allies.Contains(otherSpawnID))
+                        {
+                            Allies.Add(otherSpawnID);
+                        }
+                    }
+                }
+                else if (otherEntity.GetEntity().faction != thisEntity.GetEntity().faction)
+                {
+                    //Its an Enemey
+                    if (!Enemies.Contains(otherSpawnID))
+                    {
+                        Enemies.Add(otherSpawnID);
+                    }
+
+                }
+                else
+                    Debug.Log("Unresolved Case Adding SpawnID to NPC Lists");
+            }
+            else
+                //It has an Entity Script, It should be in gameManager Spawns Dictionary
+                Debug.Log("ID Not in GameManager");
+        }
+    }
+    #endregion
+        /*******************************************/
+        /*      (Trigger) Remove from Lists        */
+        /*******************************************/
+    #region List Updater(Remove)
+    private void OnTriggerExit(Collider other)
+    {
+        //Purpose of this method is to remove unnessary objects from Lists.
+        //No code to change behavior is in this method.
+        if (other.gameObject.GetComponent<Entity>() != null)
+        {
+            ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
+            Allies.Remove(otherSpawnID);
+            Enemies.Remove(otherSpawnID);
+        }
+    }
+    #endregion
+    #endregion
 
     /*******************************************/
     /*          AI Behavior Methods            */
     /*******************************************/
     #region Methods that Define Behaviors
 
-        /*******************************************/
-        /*             Behavior Methods            */
-        /*******************************************/
+    /*******************************************/
+    /*             Behavior Methods            */
+    /*******************************************/
     #region Check Enemy positions from List
     private void Check_EnterCombatMode()
     {
@@ -279,16 +330,22 @@ public class EntityAI : MonoBehaviour
             //Check Hitlist for next Target
             if (HitList.Count > 0)
             {
-                if (gameManager.instance.spawns.ContainsKey(HitList[0]))
+                //Keep HitList Clean
+                List<ushort> newList = new List<ushort>();
+                foreach (ushort target in HitList)
+                {
+                    if (gameManager.instance.ContainsSpawn(target))
+                        newList.Add(target);
+                }
+                Allies = newList;
+                //Temporary targeting Code until an Aggro system is invented
+                if (gameManager.instance.entitySpawns.ContainsKey(HitList[0]))
                 {
                     Target = HitList[0];
                     CombatMode = true;
                 }
                 else
-                {
-
                     HitList.RemoveAt(0);
-                }
                 //target = gameManager.instance.spawns.GetValueOrDefault(HitList[0]).GetGameObject();
                 
                 
@@ -299,11 +356,11 @@ public class EntityAI : MonoBehaviour
                 //Check Enemy List
                 foreach(ushort enemyID in Enemies)
                 {
-                    if (gameManager.instance.spawns.ContainsKey(enemyID))
+                    if (gameManager.instance.entitySpawns.ContainsKey(enemyID))
                     {
                         UpdatedList.Add(enemyID);
 
-                        GameObject enemy = gameManager.instance.spawns.GetValueOrDefault(enemyID).GetGameObject();
+                        GameObject enemy = gameManager.instance.entitySpawns.GetValueOrDefault(enemyID).GetGameObject();
                         Vector3 enemyDirection = RetrieveObjectDirection(enemy.transform.position);
                         float globalDisplacement = GlobalAngularDisplacement(enemyDirection);
                         float localDisplacement = RelativeAngle(globalDisplacement);
@@ -312,7 +369,7 @@ public class EntityAI : MonoBehaviour
                         if (enemyDirection.magnitude <= viewDistance && Mathf.Abs(localDisplacement) + headPivot_OffsetCur <= (fieldOfView / 2))
                         {
                             
-                            if (gameManager.instance.spawns.ContainsKey(enemyID))
+                            if (gameManager.instance.entitySpawns.ContainsKey(enemyID))
                             {
                                 RaycastHit hit;
                                 Physics.Raycast(transform.position, enemyDirection.normalized, out hit);
@@ -332,10 +389,10 @@ public class EntityAI : MonoBehaviour
             }
         }
     }
-
-    /*******************************************/
-    /*           LookoutMode Behavior          */
-    /*******************************************/
+    #endregion
+        /*******************************************/
+        /*           LookoutMode Behavior          */
+        /*******************************************/
     #region Lookout Mode Behavior
     private void DoLookOutMode()
     {
@@ -349,13 +406,22 @@ public class EntityAI : MonoBehaviour
         SmoothHeading(headPivot_LookoutRange);
     }
     #endregion
-
-    /*******************************************/
-    /*       Move Object to Desintation        */
-    /*******************************************/
-    private void MoveObject(Vector3 _moveDirection)
+        /*******************************************/
+        /*           Lock Head to Target          */
+        /*******************************************/
+    #region Lock Head to Target
+    private void LockHeadToTarget(float _Destination)
     {
-        MoveObject(_moveDirection);
+        //Get Angle to Destination and Get angle to target
+        //Head will look at destination point or its target
+
+        targetAngle = RelativeAngle(gameManager.instance.GetIDPosition(Target));
+        headPivotSpeed = 40;
+        if (Mathf.Abs(targetAngle) > headPivot_OffsetMax)
+            SmoothHeading(destinationAngle);
+        else
+            SmoothHeading(targetAngle);
+
     }
     #endregion
 
@@ -366,115 +432,21 @@ public class EntityAI : MonoBehaviour
     /*******************************************/
     #region Functionality Methods
 
+    /*******************************************/
+    /*         Sets character Homepoint        */
+    /*******************************************/
+    #region SetHomePoint() initialization
     public IEnumerator SetHomePoint()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
         homePoint = transform.position;
         //gameObject.SetActive(true);
     }
-    private bool VerfiyTargetSpawnExists()
-    {
-        bool inspawnManager = false;
-        if (gameManager.instance.spawns.ContainsKey(Target))
-        {
-            inspawnManager = true;
-        }
-        else
-        {
-            //If not in world, clean Lists
-            Allies.Remove(Target);
-            Enemies.Remove(Target);
-            Target = 0;
-            CombatMode = false;
-        }
-        return inspawnManager;
-    }
-        /*******************************************/
-        /*          Add Objects to Lists           */
-        /*******************************************/
-    #region List Updater(Add)
-    private void OnTriggerEnter(Collider other)
-    {
-        
-        //Debug.Log("Trigger Entered");
-        if(other.gameObject.GetComponent<Entity>() != null)
-        {
-            //Debug.Log(gameManager.instance.ContainsSpawn(spawnID));
-            
-            ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
-            //Debug.Log(gameManager.instance.ContainsSpawn(otherSpawnID));
-            EntityManager otherEntity;
-            EntityManager thisEntity = gameManager.instance.spawns.GetValueOrDefault(spawnID);
-
-            if(gameManager.instance.spawns.TryGetValue(otherSpawnID, out otherEntity))
-            {
-                //if Either is dead
-                if (otherEntity.GetEntity().faction == Entity_Faction.Corpse || !isAlive)
-                {
-                    //Ignore Corpses for Now
-                    //Debug.Log("Corpse"); 
-                }
-                else if(otherEntity.GetEntity().faction == thisEntity.GetEntity().faction)
-                {
-                    //Not Self
-                    if (otherSpawnID != spawnID )
-                    {
-                        //Its an Ally
-                        if (!Allies.Contains(otherSpawnID))
-                        {
-                            Allies.Add(otherSpawnID);
-                        }
-                        
-                    }
-                    
-                }
-                else if(otherEntity.GetEntity().faction != thisEntity.GetEntity().faction)
-                {
-                    //Its an Enemey
-                    if (!Enemies.Contains(otherSpawnID))
-                    {
-                        Enemies.Add(otherSpawnID);
-                    }
-                    
-                }
-                else
-                {
-                    Debug.Log("Unresolved Case Adding SpawnID to NPC Lists");
-                }
-            }
-            else
-            {
-                //It has an Entity Script, It should be in gameManager Spawns Dictionary
-                Debug.Log("ID Not in GameManager");
-            }          
-        }
-        else
-        {
-            Debug.Log("Instantiated Object Test");
-        }
-    }
     #endregion
-        /*******************************************/
-        /*        Remove Objects from Lists        */
-        /*******************************************/
-    #region List Updater(Remove)
-    private void OnTriggerExit(Collider other)
-    {
-        //Purpose of this method is to remove unnessary objects from Lists.
-        //No code to change behavior is in this method.
-        if(other.gameObject.GetComponent<Entity>() != null)
-        {
-            ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
-            Allies.Remove(otherSpawnID);
-            Enemies.Remove(otherSpawnID);
-        }
-    }
-    #endregion
-
         /*******************************************/
         /*    Gets this Heading in Euler Angles    */
         /*******************************************/
-    #region Get Object Heading
+    #region Heading()
     //Returns Euler Angle based on Object Rotation Y Component
     private float Heading()
     {
@@ -482,11 +454,10 @@ public class EntityAI : MonoBehaviour
         return transform.rotation.eulerAngles.y;
     }
     #endregion
-
         /*******************************************/
         /*         Retrieve Object Direction       */
         /*******************************************/
-    #region Retrieve Target Direction
+    #region RetrieveTargetDirection()
     //Retrieves direction vector to object
     private Vector3 RetrieveObjectDirection(Vector3 _otherObject)
     {
@@ -499,9 +470,9 @@ public class EntityAI : MonoBehaviour
     }
     #endregion
         /*******************************************/
-        /*        Retrieve Euler Displacment       */
+        /*    Difference in Global Euler Angles    */
         /*******************************************/
-    #region Get Angular Discplacement to object
+    #region GlobalAngularDisplacement()
     private float GlobalAngularDisplacement(Vector3 _otherPoint)
     {       
         
@@ -510,31 +481,25 @@ public class EntityAI : MonoBehaviour
     }
     #endregion
         /*******************************************/
-        /*         Relative Angle to object        */
+        /*     Difference in local EulerAngles     */
         /*******************************************/
-
-    #region Retrieve Angle from Heading to Object
-    //Heading Angle to object angular discplacement
+    #region RelativeAngle(float)
     private float RelativeAngle(float _globalAngle)
     {
         return Mathf.DeltaAngle(Heading(), _globalAngle);
     }
     #endregion
-
-    /*******************************************/
-    /*      Quick Relative Angle to object     */
-    /*******************************************/
-    #region Relative Angle by calling all three methods
+    #region RelativeAngle(Vector3)
     private float RelativeAngle(Vector3 _desintationPoint)
     {
         float angularDisplacement = GlobalAngularDisplacement(RetrieveObjectDirection(_desintationPoint));
         return Mathf.DeltaAngle(Heading(), angularDisplacement);
     }
     #endregion
-    #endregion
-    /*******************************************/
-    /*        Smooth Heading rotation          */
-    /*******************************************/
+
+        /*******************************************/
+        /*        Smooth Heading rotation          */
+        /*******************************************/
     #region Realistic Head Movement over instantly snapping to direction
     private void SmoothHeading(float _lookDestination)
     {
@@ -552,6 +517,31 @@ public class EntityAI : MonoBehaviour
         }
 
     }
+    #endregion
+
+        /*******************************************/
+        /*        Quick Call to GameManager        */
+        /*******************************************/
+    #region VerifyTargetSpawnExists()
+    private bool VerfiyTargetSpawnExists()
+    {
+        bool inspawnManager = false;
+        if (gameManager.instance.entitySpawns.ContainsKey(Target))
+        {
+            inspawnManager = true;
+        }
+        else
+        {
+            //If not in world, clean Lists
+            Allies.Remove(Target);
+            Enemies.Remove(Target);
+            Target = 0;
+            CombatMode = false;
+        }
+        return inspawnManager;
+    }
+    #endregion
+
     #endregion
 
     /*******************************************/
