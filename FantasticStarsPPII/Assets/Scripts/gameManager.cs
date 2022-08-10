@@ -34,20 +34,20 @@ public class gameManager : MonoBehaviour
             currentMenuOpen.SetActive(isPaused);
 
             if (isPaused)
-                CursorLock();
+                cursorLock();
             else if (currentMenuOpen)
-                CursorUnlock();
+                cursorUnlock();
         }
     }
 
-    public void CursorLock()
+    public void cursorLock()
     {
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Confined;
         Time.timeScale = 0;
     }
 
-    public void CursorUnlock()
+    public void cursorUnlock()
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
