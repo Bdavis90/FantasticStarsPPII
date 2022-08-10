@@ -53,7 +53,7 @@ MonoBehaviour:
   classType: 10
   faction: 200
   spawnID: 0
-  alive: 1
+  isAlive: 1
   Health: 10
 --- !u!114 &2628173920337941722
 MonoBehaviour:

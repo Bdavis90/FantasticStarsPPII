@@ -11,7 +11,7 @@ public class Entity : MonoBehaviour, IDamageable
     [SerializeField] ushort spawnID;
 
     [Header("----- Attributes -----")]
-    [SerializeField] bool alive;
+    [SerializeField] bool isAlive;
     [SerializeField] int Health;
 
     void Start()
@@ -34,6 +34,11 @@ public class Entity : MonoBehaviour, IDamageable
     {
         return spawnID;
     }
+
+    public bool GetAlive()
+    {
+        return isAlive;
+    }
     public bool takeDamage(int _damage)
     {
 
@@ -42,19 +47,22 @@ public class Entity : MonoBehaviour, IDamageable
         if(Health <= 0)
         {
             gameManager.instance.spawns.Remove(spawnID);
-            alive = false;
+            isAlive = false;
 
             faction = Entity_Faction.Corpse;
             gameObject.name = "(Corpse)" + gameObject.name;
+            if(GetComponent<EntityAI>() != null)
+            {
+                GetComponent<EntityAI>().SetAlive(false);
+            }
 
             StartCoroutine(Corpse());
-            //Death Animation
-            
+            //Simple Death Animation          
             //gameObject.transform.Rotate(Vector3.right * 90);
             gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
         }
 
-        return alive;
+        return isAlive;
     }
 
     IEnumerator Corpse()

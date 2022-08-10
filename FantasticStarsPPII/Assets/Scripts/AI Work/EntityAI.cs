@@ -10,7 +10,8 @@ public class EntityAI : MonoBehaviour
     /*******************************************/
     private GameObject FOV_Object;
     private LineRenderer FOV_LR;
-
+    private bool isAlive = true;
+    private bool cleanupOnDeath = true;
     /*******************************************/
     /*         Object Detection Members        */
     /*******************************************/
@@ -69,6 +70,11 @@ public class EntityAI : MonoBehaviour
         spawnID = _id;
     }
 
+    public void SetAlive(bool _value)
+    {
+        isAlive = _value;
+    }
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -78,164 +84,185 @@ public class EntityAI : MonoBehaviour
         //y axis Magnitudes Causes Problems, only set homepoint when grounded
         if (controller.isGrounded)
             homePoint = transform.position;
-        else StartCoroutine(SetHomePoint());
+        else
+            StartCoroutine(SetHomePoint());
         
         homePointDirection = GlobalAngularDisplacement(transform.forward);
         
     }
 
+    private void Update()
+    {
+        if (!isAlive && cleanupOnDeath)
+        {
+            Destroy(FOV_Object);
+            GetComponent<SphereCollider>().enabled = false;
+            Allies = null;
+            Enemies = null;
+            HitList = null;         
+            
+            cleanupOnDeath = false;
+
+        }
+    }
+
     private void FixedUpdate()
     {
-        FOV_Prototype_Update();
-        //Behavior to Detect and Engage Enemy
-        Check_EnterCombat();
-
-        if (CombatMode)
+        //Only do if alive
+        if (isAlive)
         {
-            WanderMode = false;
-            headPivot_OffsetCur = 0;//probabably delete this
+            FOV_Prototype_Update();
+            //Behavior to Detect and Engage Enemy
+            Check_EnterCombat();
 
-            if (homePointDelay <= 0)
+            if (CombatMode)
             {
-                //Delay Timer to Return to home point
-                homePointDelay = 2;
-            }
+                WanderMode = false;
+                headPivot_OffsetCur = 0;//probabably delete this
 
-            //Combat Mode means the Targets have been identified
-            //Entity needs to relocate from his position to a destination.
-
-            //Set Destination. Target may not always be the player
-            //TODO:: Fancy Destionion logic needed
-            //DELETE THIS
-            //nextMoveDestination = target.transform.position;
-            if (VerfiyTargetSpawnExists())
-            {
-                nextMoveDestination = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().transform.position;
-            }
-            
-            //It seem my Move might able to be put in a Imoveable or method
-            //Each else will only need to solve destinations.
-
-            //Get Angle to Destination and Get angle to target
-            //Head will look at destination point or its target
-            destinationAngle = RelativeAngle(nextMoveDestination);
-            //TODO Not the right reference Points because the target is always the destination right now.
-            targetAngle = RelativeAngle(nextMoveDestination);
-
-            headPivotSpeed = 40;
-            if (Mathf.Abs(targetAngle) > headPivot_OffsetMax)
-            {
-                SmoothHeading(destinationAngle);
-                //headPivot_OffsetCur = destinationAngle;
-            }
-            else
-                SmoothHeading(targetAngle);
-                //headPivot_OffsetCur = targetAngle;
-
-            //Rotate towards Destination
-            //if((int)destinationAngle > 0)
-                transform.Rotate(Vector3.up, destinationAngle * rotationSpeed * Time.fixedDeltaTime);
-
-            //Move to Destination
-            //Defined destination will be different for enemy types.
-
-            if(RetrieveObjectDirection(nextMoveDestination).magnitude > 2)
-            {
-                controller.Move(transform.forward * runSpeed * Time.fixedDeltaTime);
-            }
-            else
-            {
-                
-                if (VerfiyTargetSpawnExists())
+                if (homePointDelay <= 0)
                 {
-                    if (true)//(target.GetComponent<IDamageable>() != null)
-                    {
-                        //Get Target Damageable
-                        IDamageable damageable = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
-                        if (damageable.takeDamage(3))
-                        {
-                            //if Alive                     
-                        }
-                        else
-                        {
-                            //if Dead    
-                            VerfiyTargetSpawnExists();
-                            Target = 0;
-                            //nextMoveDestination = homePoint;
-                            CombatMode = false;
-                            //When Target Dies, Turn off Combat Mode
-                            //The next fixed frame will determine hit list, destination and modes.
-                        }
-                    }
+                    //Delay Timer to Return to home point
+                    homePointDelay = 2;
                 }
 
+                //Combat Mode means the Targets have been identified
+                //Entity needs to relocate from his position to a destination.
 
-            }
-            
-            //MoveObject(transform.forward * runSpeed * Time.deltaTime);
-
-        }
-        else if (WanderMode)
-        {
-            if (HunterMode)
-            {
-                //Search Random cooridnate within specified Radius;
-            }
-            else if (PatrolMode)
-            {
-                //List of vector 3 points;
-            }
-            else
-            {
-                //Mopes around the Zone AI
-            }
-
-            if (LookoutMode)
-            {
-                //Simulates Head Movement while out of Combat
-                DoLookOutMode();             
-            }
-        }
-        else
-        {
-
-
-            if (homePointDelay > 0)
-            {
-                homePointDelay -= Time.fixedDeltaTime;
-            }
-            else
-            {
-                
-                //TODO:: Magnitude is Compensating for the Y axis because I'm using Primitive models to test.
-                if (RetrieveObjectDirection(homePoint).magnitude > 0.2f)
+                //Set Destination. Target may not always be the player
+                //TODO:: Fancy Destionion logic needed
+                //DELETE THIS
+                //nextMoveDestination = target.transform.position;
+                if (VerfiyTargetSpawnExists())
                 {
-                    
-                    if (Mathf.Abs((int)RelativeAngle(homePoint)) > 5)
-                        transform.Rotate(Vector3.up, RelativeAngle(homePoint) * Time.fixedDeltaTime);
-                    else
-                    {
-                        transform.Rotate(Vector2.up, RelativeAngle(homePoint));
-                        controller.Move(transform.forward * (runSpeed / 2) * Time.fixedDeltaTime);
-                    }
+                    nextMoveDestination = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().transform.position;
+                }
+
+                //It seem my Move might able to be put in a Imoveable or method
+                //Each else will only need to solve destinations.
+
+                //Get Angle to Destination and Get angle to target
+                //Head will look at destination point or its target
+                destinationAngle = RelativeAngle(nextMoveDestination);
+                //TODO Not the right reference Points because the target is always the destination right now.
+                targetAngle = RelativeAngle(nextMoveDestination);
+
+                headPivotSpeed = 40;
+                if (Mathf.Abs(targetAngle) > headPivot_OffsetMax)
+                {
+                    SmoothHeading(destinationAngle);
+                    //headPivot_OffsetCur = destinationAngle;
+                }
+                else
+                    SmoothHeading(targetAngle);
+                //headPivot_OffsetCur = targetAngle;
+
+                //Rotate towards Destination
+                //if((int)destinationAngle > 0)
+                transform.Rotate(Vector3.up, destinationAngle * rotationSpeed * Time.fixedDeltaTime);
+
+                //Move to Destination
+                //Defined destination will be different for enemy types.
+
+                if (RetrieveObjectDirection(nextMoveDestination).magnitude > 2)
+                {
+                    controller.Move(transform.forward * runSpeed * Time.fixedDeltaTime);
                 }
                 else
                 {
-                    transform.position = homePoint;
-                    if((int)RelativeAngle(homePointDirection) > 2)
-                        transform.Rotate(Vector3.up, RelativeAngle(homePointDirection) * Time.fixedDeltaTime);
+
+                    if (VerfiyTargetSpawnExists())
+                    {
+                        if (true)//(target.GetComponent<IDamageable>() != null)
+                        {
+                            //Get Target Damageable
+                            IDamageable damageable = gameManager.instance.spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
+                            if (damageable.takeDamage(3))
+                            {
+                                //if Alive                     
+                            }
+                            else
+                            {
+                                //if Dead    
+                                VerfiyTargetSpawnExists();
+                                Target = 0;
+                                //nextMoveDestination = homePoint;
+                                CombatMode = false;
+                                //When Target Dies, Turn off Combat Mode
+                                //The next fixed frame will determine hit list, destination and modes.
+                            }
+                        }
+                    }
+
+
+                }
+
+                //MoveObject(transform.forward * runSpeed * Time.deltaTime);
+
+            }
+            else if (WanderMode)
+            {
+                if (HunterMode)
+                {
+                    //Search Random cooridnate within specified Radius;
+                }
+                else if (PatrolMode)
+                {
+                    //List of vector 3 points;
+                }
+                else
+                {
+                    //Mopes around the Zone AI
+                }
+
+                if (LookoutMode)
+                {
+                    //Simulates Head Movement while out of Combat
+                    DoLookOutMode();
+                }
+            }
+            else
+            {
+
+
+                if (homePointDelay > 0)
+                {
+                    homePointDelay -= Time.fixedDeltaTime;
+                }
+                else
+                {
+
+                    //TODO:: Magnitude is Compensating for the Y axis because I'm using Primitive models to test.
+                    if (RetrieveObjectDirection(homePoint).magnitude > 0.2f)
+                    {
+
+                        if (Mathf.Abs((int)RelativeAngle(homePoint)) > 5)
+                            transform.Rotate(Vector3.up, RelativeAngle(homePoint) * Time.fixedDeltaTime);
+                        else
+                        {
+                            transform.Rotate(Vector2.up, RelativeAngle(homePoint));
+                            controller.Move(transform.forward * (runSpeed / 2) * Time.fixedDeltaTime);
+                        }
+                    }
                     else
                     {
-                        transform.Rotate(Vector3.up, RelativeAngle(homePointDirection));
-                        WanderMode = true;
-                        
+                        transform.position = homePoint;
+                        if ((int)RelativeAngle(homePointDirection) > 2)
+                            transform.Rotate(Vector3.up, RelativeAngle(homePointDirection) * Time.fixedDeltaTime);
+                        else
+                        {
+                            transform.Rotate(Vector3.up, RelativeAngle(homePointDirection));
+                            WanderMode = true;
+
+                        }
+
                     }
-                        
+
                 }
 
             }
-            
         }
+        
         //moveInput
         if (controller.isGrounded)
         {
@@ -285,6 +312,7 @@ public class EntityAI : MonoBehaviour
             }
             else if (Enemies.Count > 0)
             {
+
                 //Check Enemy List
                 foreach(ushort enemyID in Enemies)
                 {
@@ -380,8 +408,9 @@ public class EntityAI : MonoBehaviour
 
     public IEnumerator SetHomePoint()
     {
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(2f);
         homePoint = transform.position;
+        //gameObject.SetActive(true);
     }
     private bool VerfiyTargetSpawnExists()
     {
@@ -406,7 +435,8 @@ public class EntityAI : MonoBehaviour
     #region List Updater(Add)
     private void OnTriggerEnter(Collider other)
     {
-
+        
+        //Debug.Log("Trigger Entered");
         if(other.gameObject.GetComponent<Entity>() != null)
         {
             
@@ -424,17 +454,25 @@ public class EntityAI : MonoBehaviour
                 else if(otherEntity.GetEntity().faction == thisEntity.GetEntity().faction)
                 {
                     //Not Self
-                    if (otherSpawnID != spawnID)
-                    {                       
+                    if (otherSpawnID != spawnID )
+                    {
                         //Its an Ally
-                        Allies.Add(otherSpawnID);
+                        if (!Allies.Contains(otherSpawnID))
+                        {
+                            Allies.Add(otherSpawnID);
+                        }
+                        
                     }
                     
                 }
                 else if(otherEntity.GetEntity().faction != thisEntity.GetEntity().faction)
                 {
                     //Its an Enemey
-                    Enemies.Add(otherSpawnID);
+                    if (!Enemies.Contains(otherSpawnID))
+                    {
+                        Enemies.Add(otherSpawnID);
+                    }
+                    
                 }
                 else
                 {
