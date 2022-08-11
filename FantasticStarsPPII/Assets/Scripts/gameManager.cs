@@ -49,12 +49,10 @@ public class gameManager : MonoBehaviour
     {
         entitySpawns.Add(_key, _objectPair);
     }
-
     public bool ContainsSpawn(ushort _ID)
     {
         return entitySpawns.ContainsKey(_ID);
     }
-
     public Vector3 GetIDPosition(ushort _ID)
     {
         return entitySpawns.GetValueOrDefault(_ID).GetGameObject().transform.position;

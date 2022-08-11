@@ -17,8 +17,6 @@ public class EntityAI : MonoBehaviour
 
 
     [Header("----- Character General -----")]
-    //[SerializeField] ushort spawnID;
-    //[SerializeField] bool isAlive = true;
     private CharacterController controller;
     private LineRenderer FOV_LR;
     private bool cleanupOnDeath = true;
@@ -62,23 +60,6 @@ public class EntityAI : MonoBehaviour
     [SerializeField] float headPivot_OffsetCur;
     [SerializeField] float headPivotSpeed;
 
-
-    /*******************************************/
-    /*          Getters and Setters            */
-    /*******************************************/
-    #region Setters
-    //public void SetSpawnID(ushort _id)
-    //{
-    //    spawnID = _id;
-    //}
-
-    //public void SetAlive(bool _value)
-    //{
-    //    isAlive = _value;
-    //}
-
-
-    #endregion
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -106,7 +87,8 @@ public class EntityAI : MonoBehaviour
             Check_EnterCombatMode();
 
             //Temp Code:: to Keep allies tracking uptodate.
-            if(Allies.Count > 0)
+            #region Allies List Cleaner Temp Code
+            if (Allies.Count > 0)
             {
                 List<ushort> newAllies = new List<ushort>();
                 foreach (ushort ally in Allies)
@@ -116,7 +98,7 @@ public class EntityAI : MonoBehaviour
                 }
                 Allies = newAllies;
             }
-
+            #endregion
 
 
             if (CombatMode)
@@ -156,7 +138,6 @@ public class EntityAI : MonoBehaviour
                     {
                         IDamageable damageable = gameManager.instance.entitySpawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
                         damageable.takeDamage(1);
-                        //cycleHitList = true; DELETE
                     }
                 }
 
@@ -240,7 +221,7 @@ public class EntityAI : MonoBehaviour
                 HitList = null;
 
                 cleanupOnDeath = false;
-
+                
             }
         }
         

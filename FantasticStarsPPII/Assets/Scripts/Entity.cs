@@ -92,8 +92,6 @@ public class Entity : MonoBehaviour, IDamageable
     }
 }
 
-
-
 public enum Entity_Class
 {
     None = 0,
