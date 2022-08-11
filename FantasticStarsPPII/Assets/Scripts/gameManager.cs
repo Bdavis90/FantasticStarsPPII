@@ -15,6 +15,8 @@ public class gameManager : MonoBehaviour
     public GameObject playerDamageFlash;
     public GameObject playerDeadMenu;
 
+    public GameObject playerSpawnPos;
+
 
     public bool isPaused;
     void Awake()
@@ -22,6 +24,9 @@ public class gameManager : MonoBehaviour
         instance = this;
         player = GameObject.FindGameObjectWithTag("Player");
         playerScript = player.GetComponent<playerController>();
+
+        playerSpawnPos = GameObject.FindGameObjectWithTag("Player Spawn Pos");
+        playerScript.respawn();
     }
 
     // Update is called once per frame

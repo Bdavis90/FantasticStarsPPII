@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class playerController : MonoBehaviour
+public class playerController : MonoBehaviour, IDamageable
 {
 
     [Header("-----Components-----")]
@@ -16,7 +16,8 @@ public class playerController : MonoBehaviour
     [Range(1, 4)] [SerializeField] float sprintMult;
     [Range(8, 20)] [SerializeField] float jumpHeight;
     [Range(15, 30)] [SerializeField] float gravityValue;
-    [Range(1, 3)] [SerializeField] int jumpsMax;
+    [Range(1, 3)][SerializeField] int jumpsMax;
+    [Range(0, 10)][SerializeField] private int hp;
 
     [Header("-----Weapon Stats-----")]
     [Range(0.1f, 5)] [SerializeField] float shootRate;
@@ -30,15 +31,19 @@ public class playerController : MonoBehaviour
     float playerspeedOrig;
     bool isSprinting = false;
     bool isShooting = false;
+    private int hpOrig;
 
 
     private void Start()
     {
         playerspeedOrig = playerSpeed;
+        hpOrig = hp;
     }
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.K))
+            takeDamage(1);
         playerMovement();
         sprint();
 
@@ -89,6 +94,41 @@ public class playerController : MonoBehaviour
             isSprinting = false;
             playerSpeed = playerspeedOrig;
         }
+    }
+
+    public void respawn()
+    {
+        controller.enabled = false;
+        transform.position = gameManager.instance.playerSpawnPos.transform.position;
+        controller.enabled = true;
+    }
+
+    public void death()
+    {
+        gameManager.instance.cursorLock();
+        gameManager.instance.currentMenuOpen = gameManager.instance.playerDeadMenu; ;
+        gameManager.instance.currentMenuOpen.SetActive(true);
+    }
+    IEnumerator damageFlash()
+    {
+        gameManager.instance.playerDamageFlash.SetActive(true);
+        yield return new WaitForSeconds(.01f);
+        gameManager.instance.playerDamageFlash.SetActive(false);
+    }
+
+    public void takeDamage(int damage)
+    {
+        hp -= damage;
+        StartCoroutine(damageFlash());
+        if (hp <= 0)
+        {
+            death();
+        }
+    }
+
+    public void resetHP()
+    {
+        hp = hpOrig;
     }
 
     //timer func

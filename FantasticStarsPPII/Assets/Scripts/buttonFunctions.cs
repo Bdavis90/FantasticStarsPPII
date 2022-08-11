@@ -20,6 +20,13 @@ public class buttonFunctions : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
+    public void respawn()
+    {
+        gameManager.instance.playerScript.resetHP();
+        gameManager.instance.playerScript.respawn();
+        gameManager.instance.cursorUnlock();
+    }
+
     public void quit()
     {
         Application.Quit();
