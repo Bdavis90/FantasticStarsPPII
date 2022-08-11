@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 2628173920337941720}
   - component: {fileID: 2628173920337941723}
   - component: {fileID: 2628173920337941722}
+  - component: {fileID: -6120954009599129471}
   - component: {fileID: 2628173920337941717}
   - component: {fileID: 2628173920337941716}
   - component: {fileID: 2628173920337941719}
@@ -82,6 +83,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de734b7eebbe3f946920e7acf016b60a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventScript: {fileID: -6120954009599129471}
   classType: 10
   faction: 200
   isNPC: 1
@@ -91,6 +93,11 @@ MonoBehaviour:
   corpseTimer: 5
   healthMax: 10
   health: 10
+  mainHand: []
+  isShooting: 0
+  rateOfFire: 0
+  weaponRange: 0
+  weaponDamage: 0
 --- !u!114 &2628173920337941722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,21 +127,30 @@ MonoBehaviour:
   homePointDirection: 0
   pathHomeTimer: 0
   nextMoveDestination: {x: 0, y: 0, z: 0}
-  atDestination: 0
   destinationAngle: 0
   targetAngle: 0
-  hasTarget: 0
   CombatMode: 0
   WanderMode: 1
   rotationSpeed: 5
   buoyancyValue: 40
-  jumpForce: 2
   characterFallSpeed: 0
   headPivotTime: 2
   headPivot_LookoutRange: 0
   headPivot_OffsetMax: 80
   headPivot_OffsetCur: 0
   headPivotSpeed: 0
+--- !u!114 &-6120954009599129471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2628173920337941713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c87875d9aad65c84d99b2238d100acf0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!33 &2628173920337941717
 MeshFilter:
   m_ObjectHideFlags: 0

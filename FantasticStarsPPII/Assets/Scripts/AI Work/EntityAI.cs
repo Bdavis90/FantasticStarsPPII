@@ -98,7 +98,7 @@ public class EntityAI : MonoBehaviour
     private void FixedUpdate()
     {
         //Only do if alive
-        if (GetComponent<Entity>().IsAlive())
+        if (GetComponent<Entity>().isAlive)
         {
             //Debug Code - Field of View sight Lines
             FOV_Prototype_Update();
@@ -265,7 +265,6 @@ public class EntityAI : MonoBehaviour
     #region List Updater(Add)
     private void OnTriggerEnter(Collider other)
     {
-        
         if (other.gameObject.GetComponent<Entity>() != null)
         {
             //TODO:: Clean UP
@@ -278,7 +277,7 @@ public class EntityAI : MonoBehaviour
             {
 
                 //if Either is dead
-                if (!otherEntity.GetEntity().IsAlive() || !GetComponent<Entity>().IsAlive())
+                if (!otherEntity.GetEntity().isAlive || !GetComponent<Entity>().isAlive)
                 {
 
                     //Ignore Corpses for Now
@@ -325,7 +324,7 @@ public class EntityAI : MonoBehaviour
         if (other.gameObject.GetComponent<Entity>() != null)
         {
             ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
-            if(GetComponent<Entity>().IsAlive())
+            if(GetComponent<Entity>().isAlive)
             {
                 Allies.Remove(otherSpawnID);
                 Enemies.Remove(otherSpawnID);

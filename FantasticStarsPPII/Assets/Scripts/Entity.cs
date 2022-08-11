@@ -7,31 +7,35 @@ public class Entity : MonoBehaviour, IDamageable
     [Header("----- Adjustable Fields -----")]
     public Entity_Class classType;
     public Entity_Faction faction;
-    [SerializeField] bool isNPC;
-    [SerializeField] bool isAlive;
+    public bool isAlive { get; set; }
 
     [Header("----- Object Manager -----")]
     [SerializeField] ushort spawnID;
-    [SerializeField] string objectName = null;
-    [SerializeField] float corpseTimer = 5f;
+    //[SerializeField] string objectName = null;
 
     [Header("----- Attributes -----")]
-    [SerializeField] int healthMax;
+    [SerializeField] int baseMax;
     [SerializeField] int health;
 
+    [Header("----- Inventory -----")]
+    [SerializeField] List<GameObject> mainHand = new List<GameObject>();
+
+    [Header("----- Weapon -----")]
+    [SerializeField] bool isShooting;
+    [Range(1, 60)][SerializeField] int rateOfFire;
+    [SerializeField] float weaponRange;
+    [SerializeField] float weaponDamage;
+
     void Start()
-    {
+    {   
+        
         //Generate ID and Add to GameManager
         spawnID = gameManager.instance.GenerateCharacterID();
-        objectName = gameObject.name;
- 
+        //objectName = gameObject.name + spawnID;
+        //Intiialize Properties
+        isAlive = true;
         gameManager.instance.AddCharacter_to_GameManager(spawnID, new EntityManager(gameObject, this));
         
-    }
-
-    public bool IsAlive()
-    {
-        return isAlive;
     }
 
     public ushort GetSpawnID()
@@ -39,60 +43,34 @@ public class Entity : MonoBehaviour, IDamageable
         return spawnID;
     }
 
+    public void ResetHealth()
+    {
+        health = baseMax;
+    }
+
     public void takeDamage(int _damage)
     {
-
         health -= _damage;
-
-        if(health <= 0)
+        if(GetComponent<IManagable>() != null)
         {
-            //If Dead, Remove from Game Manager spawns
-            //This is the only Code that should delete from Game Manager
-            OnCharacterDeath();
-                
-            //Simple Death Animation
-            //gameObject.transform.Rotate(Vector3.right * 90);
-            gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
-      
-        }
-    }
+            IManagable manager = GetComponent<IManagable>();
 
-    IEnumerator DestroyCorpse()
-    {      
-        yield return new WaitForSeconds(corpseTimer);
-        Destroy(gameObject);
-    }
+            if (health <= 0)
+            {
+                gameManager.instance.entitySpawns.Remove(spawnID);
+                isAlive = false;
+                manager.onDeath();
+            }
+            else
+            {
+                manager.onHit();
+            }
 
-    private void OnCharacterDeath()
-    {
-        gameManager.instance.entitySpawns.Remove(spawnID);
-        isAlive = false;
-        if (isNPC)
-        {
-            gameObject.name = "(Corpse)" + gameObject.name;
-            StartCoroutine(DestroyCorpse());
         }
-        else
-        {
-            StartCoroutine(DelayedPlayerSpawn());
-        }
-    }
+   
 
-    private IEnumerator DelayedPlayerSpawn()
-    {
-        health = healthMax;
-        yield return new WaitForSeconds(3);
-        gameObject.transform.rotation = new Quaternion(0f, 0f, 0f, 1);
-        gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.x, transform.localScale.z);
-        GetComponent<CharacterController>().enabled = false;
-        transform.position = new Vector3(0, 0.8f, 0); //TODO::Better Vector3 and Method
-        GetComponent<CharacterController>().enabled = true;
-        isAlive = true;
-        gameManager.instance.AddCharacter_to_GameManager(spawnID, new EntityManager(gameObject, this));
     }
 }
-
-
 
 public enum Entity_Class
 {
