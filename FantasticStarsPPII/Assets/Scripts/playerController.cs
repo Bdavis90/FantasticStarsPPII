@@ -30,6 +30,8 @@ public class playerController : MonoBehaviour
     float playerspeedOrig;
     bool isSprinting = false;
     bool isShooting = false;
+    bool isleaningRight = false;
+    bool isleaningLeft = false;
 
 
     private void Start()
@@ -71,6 +73,25 @@ public class playerController : MonoBehaviour
         //applies the gravity, drags the player down
         playerVelocity.y -= gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
+
+        if (Input.GetButtonDown("Lean Left"))
+        {
+            transform.localRotation = Quaternion.Euler(0, 0, 20);
+        }
+        if (Input.GetButtonUp("Lean Left"))
+        {
+            transform.localRotation = Quaternion.Euler(0, 0, 0);
+        }
+
+        if (Input.GetButtonDown("Lean Right"))
+        {
+            transform.localRotation = Quaternion.Euler(0, 0, -20);
+        }
+        if (Input.GetButtonUp("Lean Right"))
+        {
+            transform.localRotation = Quaternion.Euler(0, 0, 0);
+        }
+
     }
 
     void sprint()
