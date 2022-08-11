@@ -28,7 +28,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     void Start()
     {
-
+        
         //Generate Unique character ID and Add to gameManager
         spawnID = gameManager.instance.GenerateCharacterID();
         //objectName = gameObject.name + spawnID;
@@ -54,16 +54,12 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         if (GetComponent<ICharacterDirector>() != null)
         {
             ICharacterDirector manager = GetComponent<ICharacterDirector>();
-
+            manager.onHit();
             if (health <= 0)
             {
                 gameManager.instance.character_Spawns.Remove(spawnID);
                 isAlive = false;
                 manager.onDeath();
-            }
-            else
-            {
-                manager.onHit();
             }
         }
     }

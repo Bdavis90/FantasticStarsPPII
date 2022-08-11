@@ -1,16 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
-
-public class AIController : MonoBehaviour
+public class AINavMeshController : MonoBehaviour
 {
     [Header("----- Adjustable Fields -----")]
     [SerializeField] GameObject FOV_Object;
     [SerializeField] float fieldOfView;
     [SerializeField] float viewDistance;
     [SerializeField] float objectDetectionRange;
-    [SerializeField] float runSpeed;
+    //[SerializeField] float runSpeed;
     [SerializeField] int pathHomeTimer_Range;
     [SerializeField] bool HunterMode;
     [SerializeField] bool PatrolMode;
@@ -18,7 +18,8 @@ public class AIController : MonoBehaviour
 
 
     [Header("----- Character General -----")]
-    private CharacterController controller;
+    [SerializeField] NavMeshAgent agent;
+    //private CharacterController controller;
     private LineRenderer FOV_LR;
     private bool cleanupOnDeath = true;
     private bool cycleHitList = false;
@@ -46,9 +47,6 @@ public class AIController : MonoBehaviour
 
     [Header("----- Character Controller Fields -----")]
     [SerializeField] float rotationSpeed = 5;
-    [SerializeField] float buoyancyValue = 40;
-    //[SerializeField] float jumpForce = 2;
-    [SerializeField] float characterFallSpeed;
     private Vector3 moveInputs = Vector3.zero;
 
     [Header("----- Head Pivot Parameters -----")]
@@ -61,15 +59,12 @@ public class AIController : MonoBehaviour
 
     void Start()
     {
-        controller = GetComponent<CharacterController>();
+        agent = GetComponent<NavMeshAgent>();
+        //controller = GetComponent<CharacterController>();
         FOV_Prototype_Initialization();
         GetComponent<SphereCollider>().radius = objectDetectionRange;
 
-        //y axis Magnitudes Causes Problems, only set homepoint when grounded
-        if (controller.isGrounded)
-            homePoint = transform.position;
-        else
-            StartCoroutine(SetHomePoint());
+        homePoint = transform.position;
 
         homePointDirection = GlobalAngularDisplacement(transform.forward);
 
@@ -86,6 +81,7 @@ public class AIController : MonoBehaviour
             Check_EnterCombatMode();
 
             //Temp Code:: to Keep allies tracking uptodate.
+            #region  Keep Unused Allies list clean here for now
             if (Allies.Count > 0)
             {
                 List<ushort> newAllies = new List<ushort>();
@@ -96,13 +92,13 @@ public class AIController : MonoBehaviour
                 }
                 Allies = newAllies;
             }
-
-
+            #endregion
 
             if (CombatMode)
             {
                 WanderMode = false;
-                headPivot_OffsetCur = 0;//probabably delete this
+                agent.stoppingDistance = 2;
+                //headPivot_OffsetCur = 0;//probabably delete this
 
                 if (pathHomeTimer <= 0)
                 {
@@ -110,33 +106,23 @@ public class AIController : MonoBehaviour
                     pathHomeTimer = Random.Range(0, pathHomeTimer_Range);
                 }
 
-                //Set Destination. Target may not always be the player
-                //TODO:: Fancy Destination logic needed
+                //Fancy Destination done with NavMesh
                 if (VerfiyTargetSpawnExists())
                 {
-                    nextMoveDestination = gameManager.instance.GetIDPosition(Target); // <----- TODO:: Temporary PlaceHolder solution
-                    destinationAngle = RelativeAngle(nextMoveDestination);
+                    agent.SetDestination(gameManager.instance.GetIDPosition(Target));
                 }
+                
+                //Combat Head Rotation keeps head rotated on Target
+                LockHeadToTarget(RelativeAngle(agent.nextPosition));
 
-                //Combat Head Rotation keeps rotated on Target
-                LockHeadToTarget(destinationAngle);
-
-                //Rotate towards Destination
-                //if((int)destinationAngle > 0)
-                transform.Rotate(Vector3.up, destinationAngle * rotationSpeed * Time.fixedDeltaTime);
-
-                //Move to Destination or Attack Here
-                if (RetrieveObjectDirection(nextMoveDestination).magnitude > 2)
+                if(agent.remainingDistance <= agent.stoppingDistance)
                 {
-                    controller.Move(transform.forward * runSpeed * Time.fixedDeltaTime);
-                }
-                else
-                {
+                    LerpRotateToTarget();
+
                     if (VerfiyTargetSpawnExists())
                     {
                         IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
                         damageable.takeDamage(1);
-                        //cycleHitList = true; DELETE
                     }
                 }
 
@@ -153,7 +139,7 @@ public class AIController : MonoBehaviour
                 }
                 else
                 {
-                    //Mopes around the Zone AI
+                    //Mopes around the Zone AI - This merely randomizes the homepoint, and lets path back home do the work.
                     float ranX = Random.Range(-40, 40);
                     float ranZ = Random.Range(-40, 40);
                     homePoint = new Vector3(ranX, transform.position.y, ranZ);
@@ -177,31 +163,20 @@ public class AIController : MonoBehaviour
                 if (pathHomeTimer > 0)
                 {
                     pathHomeTimer -= Time.fixedDeltaTime;
+                    agent.isStopped = true;
                 }
                 else
                 {
-                    //TODO:: Magnitude is Compensating for the Y axis because I'm using Primitive models to test.
-                    if (RetrieveObjectDirection(homePoint).magnitude > 0.2f)
-                    {
+                    agent.isStopped = false;
 
-                        if (Mathf.Abs((int)RelativeAngle(homePoint)) > 5)
-                            transform.Rotate(Vector3.up, RelativeAngle(homePoint) * Time.fixedDeltaTime);
-                        else
-                        {
-                            transform.Rotate(Vector2.up, RelativeAngle(homePoint));
-                            controller.Move(transform.forward * (runSpeed / 2) * Time.fixedDeltaTime);
-                        }
-                    }
-                    else
+                    agent.SetDestination(homePoint);
+                    agent.stoppingDistance = 0;
+
+                    if (agent.remainingDistance <= 0.2f)
                     {
-                        transform.position = homePoint;
-                        if ((int)RelativeAngle(homePointDirection) > 2)
-                            transform.Rotate(Vector3.up, RelativeAngle(homePointDirection) * Time.fixedDeltaTime);
-                        else
-                        {
-                            transform.Rotate(Vector3.up, RelativeAngle(homePointDirection));
-                            WanderMode = true;
-                        }
+                        WanderMode = true;
+                        agent.stoppingDistance = 2;
+                    
                     }
 
                 }
@@ -217,23 +192,12 @@ public class AIController : MonoBehaviour
                 GetComponent<SphereCollider>().enabled = false;
                 Allies = null;
                 Enemies = null;
-                HitList = null;
+                HitList = null;       
 
                 cleanupOnDeath = false;
 
             }
         }
-
-        //simple Gravity
-        if (controller.isGrounded)
-        {
-            characterFallSpeed = 0;
-        }
-        else
-            characterFallSpeed -= (1 / buoyancyValue) * Time.fixedDeltaTime;
-
-        moveInputs = transform.up * characterFallSpeed;
-        controller.Move(moveInputs);
     }
     /*******************************************/
     /*          (Collider Triggers)            */
@@ -434,14 +398,28 @@ public class AIController : MonoBehaviour
 
     }
     #endregion
-
+    /*******************************************/
+    /*        Rotate transform to Target       */
+    /*******************************************/
+    #region LerpRotateToTarget()
+    public void LerpRotateToTarget()
+    {
+        if (VerfiyTargetSpawnExists())
+        {
+            Vector3 targetPos = RetrieveObjectDirection(gameManager.instance.GetIDPosition(Target));
+            targetPos.y = 0;
+            Quaternion rotate = Quaternion.LookRotation(targetPos);
+            transform.rotation = Quaternion.Lerp(transform.rotation, rotate, rotationSpeed * Time.fixedDeltaTime);
+        }
+    }
     #endregion
 
     /*******************************************/
     /*          Functionality Methods          */
     /*******************************************/
-    #region Functionality Methods
+    #endregion
 
+    #region Functionality Methods
     /*******************************************/
     /*         Sets character Homepoint        */
     /*******************************************/
@@ -563,13 +541,9 @@ public class AIController : MonoBehaviour
     /*******************************************/
     private void FOV_Prototype_Initialization()
     {
-        //FOV_Object = new GameObject();
-        //FOV_Object.name = "Entity FOV";
         FOV_LR = FOV_Object.AddComponent<LineRenderer>();
-
         FOV_LR.name = "FOV_Draw";
         FOV_LR.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
-        //FOV_LR.material = new Material(Shader.);
         FOV_LR.positionCount = 12;
         FOV_LR.startColor = Color.red;
         FOV_LR.endColor = Color.red;
