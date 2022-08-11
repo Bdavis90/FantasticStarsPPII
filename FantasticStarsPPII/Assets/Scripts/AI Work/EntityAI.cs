@@ -9,17 +9,20 @@ public class EntityAI : MonoBehaviour
     [SerializeField] float fieldOfView;
     [SerializeField] float viewDistance;
     [SerializeField] float objectDetectionRange;
-    [SerializeField] float runSpeed;
+    [SerializeField] float runSpeed;  
+    [SerializeField] int pathHomeTimer_Range;
     [SerializeField] bool HunterMode;
     [SerializeField] bool PatrolMode;
     [SerializeField] bool LookoutMode;
-    
+
+
     [Header("----- Character General -----")]
-    [SerializeField] ushort spawnID;
-    [SerializeField] bool isAlive = true;
+    //[SerializeField] ushort spawnID;
+    //[SerializeField] bool isAlive = true;
     private CharacterController controller;
     private LineRenderer FOV_LR;
     private bool cleanupOnDeath = true;
+    private bool cycleHitList = false;
     
     [Header("----- Character Lists -----")]
     [SerializeField] ushort Target;
@@ -29,17 +32,18 @@ public class EntityAI : MonoBehaviour
     //[SerializeField] List<GameObject> environmentObjects;
     //[SerializeField] List<GameObject> abilityObjects;
 
-    [Header("----- Destinations -----")]
+    [Header("----- Home Parameters -----")]
     [SerializeField] Vector3 homePoint;
+    [SerializeField] float homePointDirection;
+    [SerializeField] float pathHomeTimer;
+
+    [Header("----- Destinations -----")]
     [SerializeField] Vector3 nextMoveDestination;
+    //[SerializeField] bool atDestination = false;
     [SerializeField] float destinationAngle;
     [SerializeField] float targetAngle;
-    [SerializeField] bool hasTarget;
+    //[SerializeField] bool hasTarget;
 
-    [Header("----- Home Parameters -----")]
-    [SerializeField] float homePointDirection;
-    [SerializeField] float homePointDelay;
-    
     [Header("----- Modes -----")]
     [SerializeField] bool CombatMode;
     [SerializeField] bool WanderMode;
@@ -47,7 +51,7 @@ public class EntityAI : MonoBehaviour
     [Header("----- Character Controller Fields -----")]
     [SerializeField] float rotationSpeed = 5;
     [SerializeField] float buoyancyValue = 40;
-    [SerializeField] float jumpForce = 2;
+    //[SerializeField] float jumpForce = 2;
     [SerializeField] float characterFallSpeed;
     private Vector3 moveInputs = Vector3.zero;
 
@@ -63,15 +67,17 @@ public class EntityAI : MonoBehaviour
     /*          Getters and Setters            */
     /*******************************************/
     #region Setters
-    public void SetSpawnID(ushort _id)
-    {
-        spawnID = _id;
-    }
+    //public void SetSpawnID(ushort _id)
+    //{
+    //    spawnID = _id;
+    //}
 
-    public void SetAlive(bool _value)
-    {
-        isAlive = _value;
-    }
+    //public void SetAlive(bool _value)
+    //{
+    //    isAlive = _value;
+    //}
+
+
     #endregion
     void Start()
     {
@@ -89,25 +95,10 @@ public class EntityAI : MonoBehaviour
         
     }
 
-    private void Update()
-    {
-        if (!isAlive && cleanupOnDeath)
-        {
-            Destroy(FOV_Object);
-            GetComponent<SphereCollider>().enabled = false;
-            Allies = null;
-            Enemies = null;
-            HitList = null;         
-            
-            cleanupOnDeath = false;
-
-        }
-    }
-
     private void FixedUpdate()
     {
         //Only do if alive
-        if (isAlive)
+        if (GetComponent<Entity>().IsAlive())
         {
             //Debug Code - Field of View sight Lines
             FOV_Prototype_Update();
@@ -133,10 +124,10 @@ public class EntityAI : MonoBehaviour
                 WanderMode = false;
                 headPivot_OffsetCur = 0;//probabably delete this
 
-                if (homePointDelay <= 0)
+                if (pathHomeTimer <= 0)
                 {
                     //Delay Timer to Return to home point
-                    homePointDelay = 2;
+                    pathHomeTimer = Random.Range(0, pathHomeTimer_Range);
                 }
 
                 //Set Destination. Target may not always be the player
@@ -165,6 +156,7 @@ public class EntityAI : MonoBehaviour
                     {
                         IDamageable damageable = gameManager.instance.entitySpawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
                         damageable.takeDamage(1);
+                        //cycleHitList = true; DELETE
                     }
                 }
 
@@ -182,6 +174,15 @@ public class EntityAI : MonoBehaviour
                 else
                 {
                     //Mopes around the Zone AI
+                    float ranX = Random.Range(-40, 40);
+                    float ranZ = Random.Range(-40, 40);
+                    homePoint = new Vector3(ranX, transform.position.y, ranZ);
+                    WanderMode = false;
+                    if(pathHomeTimer <= 0)
+                    {
+                        pathHomeTimer = Random.Range(0, pathHomeTimer_Range);
+                    }
+
                 }
 
                 if (LookoutMode)
@@ -193,9 +194,9 @@ public class EntityAI : MonoBehaviour
             else //End of Combat Logic Loop
             {
                 //Path Back to Home Point
-                if (homePointDelay > 0)
+                if (pathHomeTimer > 0)
                 {
-                    homePointDelay -= Time.fixedDeltaTime;
+                    pathHomeTimer -= Time.fixedDeltaTime;
                 }
                 else
                 {
@@ -227,6 +228,21 @@ public class EntityAI : MonoBehaviour
 
             }
         }
+        else
+        {
+            //If Dead
+            if (cleanupOnDeath)
+            {
+                Destroy(FOV_Object);
+                GetComponent<SphereCollider>().enabled = false;
+                Allies = null;
+                Enemies = null;
+                HitList = null;
+
+                cleanupOnDeath = false;
+
+            }
+        }
         
         //simple Gravity
         if (controller.isGrounded)
@@ -249,24 +265,29 @@ public class EntityAI : MonoBehaviour
     #region List Updater(Add)
     private void OnTriggerEnter(Collider other)
     {
+        
         if (other.gameObject.GetComponent<Entity>() != null)
         {
+            //TODO:: Clean UP
             ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
+            ushort thisSpawnID = GetComponent<Entity>().GetSpawnID();
             EntityManager otherEntity;
-            EntityManager thisEntity = gameManager.instance.entitySpawns.GetValueOrDefault(spawnID);
+            EntityManager thisEntity = gameManager.instance.entitySpawns.GetValueOrDefault(thisSpawnID);
 
             if (gameManager.instance.entitySpawns.TryGetValue(otherSpawnID, out otherEntity))
             {
+
                 //if Either is dead
-                if (otherEntity.GetEntity().faction == Entity_Faction.Corpse || !isAlive)
+                if (!otherEntity.GetEntity().IsAlive() || !GetComponent<Entity>().IsAlive())
                 {
+
                     //Ignore Corpses for Now
                     //Debug.Log("Corpse"); 
                 }
                 else if (otherEntity.GetEntity().faction == thisEntity.GetEntity().faction)
                 {
                     //Not Self
-                    if (otherSpawnID != spawnID)
+                    if (otherEntity.GetGameObject() != gameObject)
                     {
                         //Its an Ally
                         if (!Allies.Contains(otherSpawnID))
@@ -304,8 +325,12 @@ public class EntityAI : MonoBehaviour
         if (other.gameObject.GetComponent<Entity>() != null)
         {
             ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
-            Allies.Remove(otherSpawnID);
-            Enemies.Remove(otherSpawnID);
+            if(GetComponent<Entity>().IsAlive())
+            {
+                Allies.Remove(otherSpawnID);
+                Enemies.Remove(otherSpawnID);
+            }
+
         }
     }
     #endregion
@@ -322,15 +347,13 @@ public class EntityAI : MonoBehaviour
     #region Check Enemy positions from List
     private void Check_EnterCombatMode()
     {
-        //Only Check Enemies List if Not in Combat
-        if (!CombatMode)
+        
+        if (HitList.Count > 0)
         {
+            //Keep HitList Clean
 
-            //TODO::Run Destination Algorithim.
-            //Check Hitlist for next Target
-            if (HitList.Count > 0)
+            if (cycleHitList)
             {
-                //Keep HitList Clean
                 List<ushort> newList = new List<ushort>();
                 foreach (ushort target in HitList)
                 {
@@ -338,19 +361,23 @@ public class EntityAI : MonoBehaviour
                         newList.Add(target);
                 }
                 Allies = newList;
-                //Temporary targeting Code until an Aggro system is invented
-                if (gameManager.instance.entitySpawns.ContainsKey(HitList[0]))
-                {
-                    Target = HitList[0];
-                    CombatMode = true;
-                }
-                else
-                    HitList.RemoveAt(0);
-                //target = gameManager.instance.spawns.GetValueOrDefault(HitList[0]).GetGameObject();
-                
-                
+                cycleHitList = false;
             }
-            else if (Enemies.Count > 0)
+
+            //Temporary targeting Code until an Aggro system is invented
+            if (gameManager.instance.entitySpawns.ContainsKey(HitList[0]))
+            {
+                Target = HitList[0]; 
+                CombatMode = true;
+            }
+            else
+                HitList.RemoveAt(0);
+
+        }
+        else if (!CombatMode)
+        {
+
+            if (Enemies.Count > 0)
             {
                 List<ushort> UpdatedList = new List<ushort>(4);
                 //Check Enemy List
@@ -372,13 +399,14 @@ public class EntityAI : MonoBehaviour
                             if (gameManager.instance.entitySpawns.ContainsKey(enemyID))
                             {
                                 RaycastHit hit;
-                                Physics.Raycast(transform.position, enemyDirection.normalized, out hit);
-                                //TODO:: Null Exception Thrown when Player Dies in stress Test
-                                if (hit.transform.gameObject == enemy)
+                                if(Physics.Raycast(transform.position, enemyDirection.normalized, out hit))
                                 {
-                                    Target = enemyID;
-                                    CombatMode = true;
-                                    HitList.Add(enemyID);
+                                    if (hit.transform.gameObject == enemy)
+                                    {
+                                        Target = enemyID;
+                                        CombatMode = true;
+                                        HitList.Add(enemyID);
+                                    }
                                 }
                             }
 
@@ -414,13 +442,16 @@ public class EntityAI : MonoBehaviour
     {
         //Get Angle to Destination and Get angle to target
         //Head will look at destination point or its target
+        if (VerfiyTargetSpawnExists())
+        {
+            targetAngle = RelativeAngle(gameManager.instance.GetIDPosition(Target));
+            headPivotSpeed = 40;
+            if (Mathf.Abs(targetAngle) > headPivot_OffsetMax)
+                SmoothHeading(destinationAngle);
+            else
+                SmoothHeading(targetAngle);
+        }
 
-        targetAngle = RelativeAngle(gameManager.instance.GetIDPosition(Target));
-        headPivotSpeed = 40;
-        if (Mathf.Abs(targetAngle) > headPivot_OffsetMax)
-            SmoothHeading(destinationAngle);
-        else
-            SmoothHeading(targetAngle);
 
     }
     #endregion
@@ -525,10 +556,10 @@ public class EntityAI : MonoBehaviour
     #region VerifyTargetSpawnExists()
     private bool VerfiyTargetSpawnExists()
     {
-        bool inspawnManager = false;
+        bool isThere = false;
         if (gameManager.instance.entitySpawns.ContainsKey(Target))
         {
-            inspawnManager = true;
+            isThere = true;
         }
         else
         {
@@ -538,7 +569,7 @@ public class EntityAI : MonoBehaviour
             Target = 0;
             CombatMode = false;
         }
-        return inspawnManager;
+        return isThere;
     }
     #endregion
 

@@ -155,9 +155,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   classType: 10
   faction: 100
+  isNPC: 0
+  isAlive: 1
   spawnID: 0
-  alive: 1
-  Health: 100
+  objectName: 
+  corpseTimer: 5
+  healthMax: 10
+  health: 10
 --- !u!114 &963920789278211120
 MonoBehaviour:
   m_ObjectHideFlags: 0

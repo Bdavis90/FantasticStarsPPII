@@ -4,27 +4,34 @@ using UnityEngine;
 
 public class Entity : MonoBehaviour, IDamageable
 {
+    [Header("----- Adjustable Fields -----")]
     public Entity_Class classType;
     public Entity_Faction faction;
+    [SerializeField] bool isNPC;
+    [SerializeField] bool isAlive;
 
+    [Header("----- Object Manager -----")]
     [SerializeField] ushort spawnID;
+    [SerializeField] string objectName = null;
+    [SerializeField] float corpseTimer = 5f;
 
     [Header("----- Attributes -----")]
-    //[SerializeField] bool isAlive;
-    [SerializeField] int Health;
+    [SerializeField] int healthMax;
+    [SerializeField] int health;
 
     void Start()
     {
         //Generate ID and Add to GameManager
         spawnID = gameManager.instance.GenerateCharacterID();
+        objectName = gameObject.name;
  
         gameManager.instance.AddCharacter_to_GameManager(spawnID, new EntityManager(gameObject, this));
-        //if Spawn is a NPC
-        if(GetComponent<EntityAI>() != null)
-        {
-            GetComponent<EntityAI>().SetSpawnID(spawnID);
-        }
         
+    }
+
+    public bool IsAlive()
+    {
+        return isAlive;
     }
 
     public ushort GetSpawnID()
@@ -35,45 +42,57 @@ public class Entity : MonoBehaviour, IDamageable
     public void takeDamage(int _damage)
     {
 
-        Health -= _damage;
+        health -= _damage;
 
-        if(Health <= 0)
+        if(health <= 0)
         {
             //If Dead, Remove from Game Manager spawns
             //This is the only Code that should delete from Game Manager
-            gameManager.instance.entitySpawns.Remove(spawnID);
-
-            faction = Entity_Faction.Corpse;
-            gameObject.name = "(Corpse)" + gameObject.name;
-
-
-            GetComponent<CharacterController>().enabled = false;
-            if (GetComponent<EntityAI>() != null)
-            {
-                GetComponent<EntityAI>().SetAlive(false);
-                StartCoroutine(Corpse());
-            }
-            else
-            {
-                //Respawn Player
-                //Enable Controller
-            }
-            
-            
-            //Simple Death Animation          
-            gameObject.transform.Rotate(Vector3.right * 90);
-            //gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
+            OnCharacterDeath();
+                
+            //Simple Death Animation
+            //gameObject.transform.Rotate(Vector3.right * 90);
+            gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
+      
         }
-
-        //return isAlive;
     }
 
-    IEnumerator Corpse()
+    IEnumerator DestroyCorpse()
     {      
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(corpseTimer);
         Destroy(gameObject);
     }
+
+    private void OnCharacterDeath()
+    {
+        gameManager.instance.entitySpawns.Remove(spawnID);
+        isAlive = false;
+        if (isNPC)
+        {
+            gameObject.name = "(Corpse)" + gameObject.name;
+            StartCoroutine(DestroyCorpse());
+        }
+        else
+        {
+            StartCoroutine(DelayedPlayerSpawn());
+        }
+    }
+
+    private IEnumerator DelayedPlayerSpawn()
+    {
+        health = healthMax;
+        yield return new WaitForSeconds(3);
+        gameObject.transform.rotation = new Quaternion(0f, 0f, 0f, 1);
+        gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.x, transform.localScale.z);
+        GetComponent<CharacterController>().enabled = false;
+        transform.position = new Vector3(0, 0.8f, 0); //TODO::Better Vector3 and Method
+        GetComponent<CharacterController>().enabled = true;
+        isAlive = true;
+        gameManager.instance.AddCharacter_to_GameManager(spawnID, new EntityManager(gameObject, this));
+    }
 }
+
+
 
 public enum Entity_Class
 {
@@ -85,7 +104,6 @@ public enum Entity_Class
 
 public enum Entity_Faction
 {
-    Corpse = 0,
     Dwarves = 100,
     Orglings = 200
 }

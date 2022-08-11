@@ -84,8 +84,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   classType: 10
   faction: 200
+  isNPC: 1
+  isAlive: 1
   spawnID: 0
-  Health: 10
+  objectName: 
+  corpseTimer: 5
+  healthMax: 10
+  health: 10
 --- !u!114 &2628173920337941722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,37 +104,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FOV_Object: {fileID: 1160844932645662232}
-  spawnID: 0
-  objectDetectionRange: 10
-  HitList: 
-  Enemies: 
-  Allies: 
-  environmentObjects: []
-  abilityObjects: []
-  Target: 0
-  nextMoveDestination: {x: 0, y: 0, z: 0}
-  destinationAngle: 0
-  targetAngle: 0
-  hasTarget: 0
-  homePoint: {x: 0, y: 0, z: 0}
-  homePointDirection: 0
-  homePointDelay: 0
-  CombatMode: 0
-  WanderMode: 1
+  fieldOfView: 90
+  viewDistance: 10
+  objectDetectionRange: 11
+  runSpeed: 5
+  pathHomeTimer_Range: 5
   HunterMode: 0
   PatrolMode: 0
   LookoutMode: 1
+  Target: 0
+  HitList: 
+  Enemies: 
+  Allies: 
+  homePoint: {x: 0, y: 0, z: 0}
+  homePointDirection: 0
+  pathHomeTimer: 0
+  nextMoveDestination: {x: 0, y: 0, z: 0}
+  atDestination: 0
+  destinationAngle: 0
+  targetAngle: 0
+  hasTarget: 0
+  CombatMode: 0
+  WanderMode: 1
+  rotationSpeed: 5
+  buoyancyValue: 40
+  jumpForce: 2
+  characterFallSpeed: 0
   headPivotTime: 2
   headPivot_LookoutRange: 0
   headPivot_OffsetMax: 80
   headPivot_OffsetCur: 0
   headPivotSpeed: 0
-  fieldOfView: 90
-  viewDistance: 8
-  runSpeed: 3
-  buoyancyValue: 40
-  jumpForce: 2
-  characterFallSpeed: 0
 --- !u!33 &2628173920337941717
 MeshFilter:
   m_ObjectHideFlags: 0
