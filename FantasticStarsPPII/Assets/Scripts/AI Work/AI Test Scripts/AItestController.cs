@@ -39,6 +39,12 @@ public class AItestController : MonoBehaviour
         //Debug.DrawRay()
         StartCoroutine(MakeDwarf());
         StartCoroutine(MakeOrgling());
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Debug.Log(gameManager.instance.character_Spawns.Count);
+        }
+
     }
 
     void PlayerMovement()

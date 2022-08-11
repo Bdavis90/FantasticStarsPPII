@@ -40,9 +40,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2628173920337941720}
-  - component: {fileID: 2628173920337941723}
-  - component: {fileID: 2628173920337941722}
-  - component: {fileID: -6120954009599129471}
+  - component: {fileID: 668278475708940287}
+  - component: {fileID: 4274347829582023940}
+  - component: {fileID: 7228830192590645744}
   - component: {fileID: 2628173920337941717}
   - component: {fileID: 2628173920337941716}
   - component: {fileID: 2628173920337941719}
@@ -71,7 +71,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2628173920337941723
+--- !u!114 &668278475708940287
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -80,25 +80,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 2628173920337941713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de734b7eebbe3f946920e7acf016b60a, type: 3}
+  m_Script: {fileID: 11500000, guid: 79b572dd2fcc34c48a63381bbb4dcc90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventScript: {fileID: -6120954009599129471}
   classType: 10
   faction: 200
-  isNPC: 1
-  isAlive: 1
   spawnID: 0
-  objectName: 
-  corpseTimer: 5
-  healthMax: 10
-  health: 10
+  baseMax: 0
+  health: 0
   mainHand: []
   isShooting: 0
   rateOfFire: 0
   weaponRange: 0
   weaponDamage: 0
---- !u!114 &2628173920337941722
+--- !u!114 &4274347829582023940
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -107,14 +102,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 2628173920337941713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6fddfe2fc413e4a408482562ecf9c49c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3d8b64d7633205442a257d58582b08af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   FOV_Object: {fileID: 1160844932645662232}
   fieldOfView: 90
   viewDistance: 10
   objectDetectionRange: 11
-  runSpeed: 5
+  runSpeed: 4
   pathHomeTimer_Range: 5
   HunterMode: 0
   PatrolMode: 0
@@ -130,7 +125,7 @@ MonoBehaviour:
   destinationAngle: 0
   targetAngle: 0
   CombatMode: 0
-  WanderMode: 1
+  WanderMode: 0
   rotationSpeed: 5
   buoyancyValue: 40
   characterFallSpeed: 0
@@ -139,7 +134,7 @@ MonoBehaviour:
   headPivot_OffsetMax: 80
   headPivot_OffsetCur: 0
   headPivotSpeed: 0
---- !u!114 &-6120954009599129471
+--- !u!114 &7228830192590645744
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -148,9 +143,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2628173920337941713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c87875d9aad65c84d99b2238d100acf0, type: 3}
+  m_Script: {fileID: 11500000, guid: 0e39622bca236b543a5d05b944f028b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  corpseTimer: 5
 --- !u!33 &2628173920337941717
 MeshFilter:
   m_ObjectHideFlags: 0

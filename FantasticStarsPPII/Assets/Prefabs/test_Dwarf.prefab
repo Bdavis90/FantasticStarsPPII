@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6973505510790807201}
-  - component: {fileID: 6973505510790807200}
-  - component: {fileID: 6973505510790807207}
-  - component: {fileID: 432720755685571883}
+  - component: {fileID: 2674267963543655210}
+  - component: {fileID: 6777328147301894857}
+  - component: {fileID: 627543751573084872}
   - component: {fileID: 6973505510790807206}
   - component: {fileID: 6973505510790807205}
   - component: {fileID: 6973505510790807204}
@@ -40,7 +40,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6973505510790807200
+--- !u!114 &2674267963543655210
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -49,25 +49,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 6973505510790807209}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de734b7eebbe3f946920e7acf016b60a, type: 3}
+  m_Script: {fileID: 11500000, guid: 79b572dd2fcc34c48a63381bbb4dcc90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventScript: {fileID: 0}
   classType: 10
   faction: 100
-  isNPC: 1
-  isAlive: 1
   spawnID: 0
-  objectName: 
-  corpseTimer: 5
-  healthMax: 10
-  health: 10
+  baseMax: 0
+  health: 0
   mainHand: []
   isShooting: 0
   rateOfFire: 0
   weaponRange: 0
   weaponDamage: 0
---- !u!114 &6973505510790807207
+--- !u!114 &6777328147301894857
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -76,14 +71,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 6973505510790807209}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6fddfe2fc413e4a408482562ecf9c49c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3d8b64d7633205442a257d58582b08af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   FOV_Object: {fileID: 8330472613477032812}
   fieldOfView: 90
   viewDistance: 10
   objectDetectionRange: 11
-  runSpeed: 5
+  runSpeed: 4
   pathHomeTimer_Range: 5
   HunterMode: 0
   PatrolMode: 0
@@ -99,7 +94,7 @@ MonoBehaviour:
   destinationAngle: 0
   targetAngle: 0
   CombatMode: 0
-  WanderMode: 1
+  WanderMode: 0
   rotationSpeed: 5
   buoyancyValue: 40
   characterFallSpeed: 0
@@ -108,7 +103,7 @@ MonoBehaviour:
   headPivot_OffsetMax: 80
   headPivot_OffsetCur: 0
   headPivotSpeed: 0
---- !u!114 &432720755685571883
+--- !u!114 &627543751573084872
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -117,9 +112,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6973505510790807209}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c87875d9aad65c84d99b2238d100acf0, type: 3}
+  m_Script: {fileID: 11500000, guid: 0e39622bca236b543a5d05b944f028b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  corpseTimer: 5
 --- !u!135 &6973505510790807206
 SphereCollider:
   m_ObjectHideFlags: 0
