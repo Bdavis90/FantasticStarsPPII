@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class playerController : MonoBehaviour
+public class playerController : MonoBehaviour, IDamageable
 {
 
     [Header("-----Components-----")]
@@ -16,9 +16,11 @@ public class playerController : MonoBehaviour
     [Range(1, 4)] [SerializeField] float sprintMult;
     [Range(8, 20)] [SerializeField] float jumpHeight;
     [Range(15, 30)] [SerializeField] float gravityValue;
-    [Range(1, 3)] [SerializeField] int jumpsMax;
+
     [SerializeField] List<healthStats> healthStat = new List<healthStats>();
-    [Range(0, 10)] public int HP;
+    [Range(0, 10)] public int hp;
+    [Range(1, 3)][SerializeField] int jumpsMax;
+
 
     [Header("-----Weapon Stats-----")]
     [Range(0.1f, 5)] [SerializeField] float shootRate;
@@ -34,19 +36,22 @@ public class playerController : MonoBehaviour
     float playerspeedOrig;
     bool isSprinting = false;
     bool isShooting = false;
+    private int hpOrig;
     bool isleaningRight = false;
     bool isleaningLeft = false;
-    int HPOrig;
+
 
 
     private void Start()
     {
         playerspeedOrig = playerSpeed;
-        HPOrig = HP;
+        hpOrig = hp;
     }
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.K))
+            takeDamage(1);
         playerMovement();
         sprint();
 
@@ -123,6 +128,41 @@ public class playerController : MonoBehaviour
         }
     }
 
+    public void respawn()
+    {
+        controller.enabled = false;
+        transform.position = gameManager.instance.playerSpawnPos.transform.position;
+        controller.enabled = true;
+    }
+
+    public void death()
+    {
+        gameManager.instance.cursorLock();
+        gameManager.instance.currentMenuOpen = gameManager.instance.playerDeadMenu; ;
+        gameManager.instance.currentMenuOpen.SetActive(true);
+    }
+    IEnumerator damageFlash()
+    {
+        gameManager.instance.playerDamageFlash.SetActive(true);
+        yield return new WaitForSeconds(.01f);
+        gameManager.instance.playerDamageFlash.SetActive(false);
+    }
+
+    public void takeDamage(int damage)
+    {
+        hp -= damage;
+        StartCoroutine(damageFlash());
+        if (hp <= 0)
+        {
+            death();
+        }
+    }
+
+    public void resetHP()
+    {
+        hp = hpOrig;
+    }
+
     //timer func
     //needs to return a 'yield'
     //a timer that makes sense
@@ -172,16 +212,16 @@ public class playerController : MonoBehaviour
 
     public void healthPickUp(int Hp, healthStats stat)
     {
-        HP = Hp;
+        hp = Hp;
         healthStat.Add(stat);
     }
 
     public void takeDamage(int dmg)
     {
-        HP -= dmg;
+        hp -= dmg;
         StartCoroutine(damageFlash());
 
-        if (HP <= 0)
+        if (hp <= 0)
         {
             //kill the player not destroy
             death();
@@ -211,6 +251,6 @@ public class playerController : MonoBehaviour
 
     public void resestHP()
     {
-        HP = HPOrig;
+        hp = hpOrig;
     }
 }

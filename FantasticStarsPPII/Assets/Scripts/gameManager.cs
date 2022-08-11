@@ -13,7 +13,7 @@ public class gameManager : MonoBehaviour
     public GameObject playerDamageFlash;
     public GameObject playerDeadMenu;
 
-    public static gameManager instance;
+    public GameObject playerSpawnPos;
 
     public ushort spawnID = 0;
     public Dictionary<ushort, EntityManager> entitySpawns = new Dictionary<ushort, EntityManager>(100);
@@ -25,11 +25,14 @@ public class gameManager : MonoBehaviour
         instance = this;
         player = GameObject.FindGameObjectWithTag("Player");
         playerScript = player.GetComponent<playerController>();
+
+        playerSpawnPos = GameObject.FindGameObjectWithTag("Player Spawn Pos");
+        playerScript.respawn();
     }
 
     void Update()
     {
-        if (Input.GetButtonDown("Cancel"))
+        if (Input.GetButtonDown("Cancel") && playerScript.hp > 0)
         {
             isPaused = !isPaused;
             currentMenuOpen = pauseMenu;
