@@ -17,12 +17,16 @@ public class playerController : MonoBehaviour
     [Range(8, 20)] [SerializeField] float jumpHeight;
     [Range(15, 30)] [SerializeField] float gravityValue;
     [Range(1, 3)] [SerializeField] int jumpsMax;
+    [SerializeField] List<healthStats> healthStat = new List<healthStats>();
+    [Range(0, 10)] public int HP;
 
     [Header("-----Weapon Stats-----")]
     [Range(0.1f, 5)] [SerializeField] float shootRate;
     [Range(1, 30)] [SerializeField] int shootDist;
     [Range(1, 10)] [SerializeField] int shootDamage;
-    //[SerializeField] List<gunStats> gunstat = new List<gunStats>();
+    [SerializeField] List<gunStats> gunstat = new List<gunStats>();
+
+    Vector3 playerDir;
 
     private Vector3 playerVelocity;
     Vector3 move = Vector3.zero;
@@ -32,11 +36,13 @@ public class playerController : MonoBehaviour
     bool isShooting = false;
     bool isleaningRight = false;
     bool isleaningLeft = false;
+    int HPOrig;
 
 
     private void Start()
     {
         playerspeedOrig = playerSpeed;
+        HPOrig = HP;
     }
 
     void Update()
@@ -45,7 +51,7 @@ public class playerController : MonoBehaviour
         sprint();
 
         //how u call an Ienumerator
-        //StartCoroutine(shoot());
+        StartCoroutine(shoot());
     }
 
     void playerMovement()
@@ -74,24 +80,28 @@ public class playerController : MonoBehaviour
         playerVelocity.y -= gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
 
-        if (Input.GetButtonDown("Lean Left"))
-        {
-            Debug.Log($"{transform.rotation.x}  {transform.rotation.y}");
-            transform.localRotation = Quaternion.Euler(transform.localRotation.x,transform.localRotation.y, (transform.localRotation.z+20));
-        }
-        if (Input.GetButtonUp("Lean Left"))
-        {
-            transform.localRotation = Quaternion.Euler(0, 0, 0);
-        }
 
-        if (Input.GetButtonDown("Lean Right"))
-        {
-            transform.localRotation = Quaternion.Euler(0, 0, -20);
-        }
-        if (Input.GetButtonUp("Lean Right"))
-        {
-            transform.localRotation = Quaternion.Euler(0, 0, 0);
-        }
+        //if (Input.GetButtonDown("Lean Left"))
+        //{
+        //    playerDir.x = 0;
+        //    playerDir.y = 0;
+        //    playerDir.z = 20;
+        //    Quaternion rotation = Quaternion.LookRotation(playerDir);
+        //    transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * 1);
+        //}
+        //if (Input.GetButtonUp("Lean Left"))
+        //{
+        //    transform.localRotation = Quaternion.Euler(0, 0, 0);
+        //}
+
+        //if (Input.GetButtonDown("Lean Right"))
+        //{
+        //    transform.localRotation = Quaternion.Euler(0, 0, -20);
+        //}
+        //if (Input.GetButtonUp("Lean Right"))
+        //{
+        //    transform.localRotation = Quaternion.Euler(0, 0, 0);
+        //}
 
     }
 
@@ -117,37 +127,90 @@ public class playerController : MonoBehaviour
     //needs to return a 'yield'
     //a timer that makes sense
     // set a time... set a bool... do something for some time... reset the bool... etc etc etc
-    //IEnumerator shoot()
-    //{
-    //    Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * shootDist, Color.red, 0.000001f);
-    //    if (gunstat.Count != 0 && Input.GetButton("Shoot") && !isShooting)
-    //    {
-    //        isShooting = true;
-    //        //raycast is using physic lib
-    //        RaycastHit hit; //returns information of what we hit
-    //        if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f)), out hit, shootDist))
-    //        {
-    //            if (hit.collider.GetComponent<IDamageable>() != null)
-    //            {
-    //                IDamageable isDamageable = hit.collider.GetComponent<IDamageable>();
+    IEnumerator shoot()
+    {
+        Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * shootDist, Color.red, 0.000001f);
+        if (gunstat.Count != 0 && Input.GetButton("Shoot") && !isShooting)
+        {
+            isShooting = true;
+            //raycast is using physic lib
+            RaycastHit hit; //returns information of what we hit
+            if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f)), out hit, shootDist))
+            {
+                if (hit.collider.GetComponent<IDamageable>() != null)
+                {
+                    IDamageable isDamageable = hit.collider.GetComponent<IDamageable>();
 
-    //                isDamageable.takeDamage(shootDamage);
-    //            }
-    //        }
-    //        //this is the yield return to get the ienumerator to stop complaining
-    //        //"do something wait and do it again"
-    //        yield return new WaitForSeconds(shootRate);
+                    if (hit.collider is SphereCollider)
+                    {
+                        //head shot
+                        isDamageable.takeDamage(shootDamage * 2);
+                    }
+                    else
+                    {
+                        //body shoot
+                        isDamageable.takeDamage(shootDamage);
+                    }
 
-    //        isShooting = false;
+                }
+            }
+            //this is the yield return to get the ienumerator to stop complaining
+            //"do something wait and do it again"
+            yield return new WaitForSeconds(shootRate);
 
-    //    }
-    //}
+            isShooting = false;
 
-    //public void gunPickup(float shootrate, int shootdist, int shootdamage, gunStats stats)
-    //{
-    //    shootRate = shootrate;
-    //    shootDist = shootdist;
-    //    shootDamage = shootdamage;
-    //    gunstat.Add(stats);
-    //}
+        }
+    }
+    public void gunPickup(float shootrate, int shootdist, int shootdamage, gunStats stats)
+    {
+        shootRate = shootrate;
+        shootDist = shootdist;
+        shootDamage = shootdamage;
+        gunstat.Add(stats);
+    }
+
+    public void healthPickUp(int Hp, healthStats stat)
+    {
+        HP = Hp;
+        healthStat.Add(stat);
+    }
+
+    public void takeDamage(int dmg)
+    {
+        HP -= dmg;
+        StartCoroutine(damageFlash());
+
+        if (HP <= 0)
+        {
+            //kill the player not destroy
+            death();
+        }
+    }
+
+    public void respawn()
+    {
+        gameManager.instance.playerScript.resestHP();
+        gameManager.instance.playerScript.respawn();
+        gameManager.instance.cursorUnlock();
+    }
+
+    public void death()
+    {
+        gameManager.instance.cursorLock();
+        gameManager.instance.currentMenuOpen = gameManager.instance.playerDeadMenu;
+        gameManager.instance.currentMenuOpen.SetActive(true);
+    }
+
+    IEnumerator damageFlash()
+    {
+        gameManager.instance.playerDamageFlash.SetActive(true);
+        yield return new WaitForSeconds(0.1f);
+        gameManager.instance.playerDamageFlash.SetActive(false);
+    }
+
+    public void resestHP()
+    {
+        HP = HPOrig;
+    }
 }
