@@ -17,7 +17,7 @@ public class playerController : MonoBehaviour, IDamageable
     [Range(8, 20)] [SerializeField] float jumpHeight;
     [Range(15, 30)] [SerializeField] float gravityValue;
     [Range(1, 3)][SerializeField] int jumpsMax;
-    [Range(0, 10)][SerializeField] private int hp;
+    [Range(0, 10)][SerializeField] public int hp;
 
     [Header("-----Weapon Stats-----")]
     [Range(0.1f, 5)] [SerializeField] float shootRate;
