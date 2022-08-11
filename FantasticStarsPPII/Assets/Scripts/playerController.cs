@@ -76,7 +76,8 @@ public class playerController : MonoBehaviour
 
         if (Input.GetButtonDown("Lean Left"))
         {
-            transform.localRotation = Quaternion.Euler(0, 0, 20);
+            Debug.Log($"{transform.rotation.x}  {transform.rotation.y}");
+            transform.localRotation = Quaternion.Euler(transform.localRotation.x,transform.localRotation.y, (transform.localRotation.z+20));
         }
         if (Input.GetButtonUp("Lean Left"))
         {
