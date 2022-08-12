@@ -18,7 +18,6 @@ public class AINavMeshController : MonoBehaviour
 
     [Header("----- Character General -----")]
     [SerializeField] NavMeshAgent agent;
-    //private CharacterController controller;
     private LineRenderer FOV_LR;
     private bool cleanupOnDeath = true;
     private bool cycleHitList = false;
@@ -71,8 +70,8 @@ public class AINavMeshController : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        //controller = GetComponent<CharacterController>();
-        //FOV_Prototype_Initialization();
+
+        FOV_Prototype_Initialization();
         GetComponent<SphereCollider>().radius = objectDetectionRange;
 
         homePoint = transform.position;
@@ -87,7 +86,7 @@ public class AINavMeshController : MonoBehaviour
         if (GetComponent<CharacterSheet>().isAlive)
         {
             //Debug Code - Field of View sight Lines
-            //FOV_Prototype_Update();
+            FOV_Prototype_Update();
             //Detect Enemy
             Check_EnterCombatMode();
 
@@ -551,13 +550,15 @@ public class AINavMeshController : MonoBehaviour
     /*       Field of View Initialization      */
     /*******************************************/
     private void FOV_Prototype_Initialization()
-    {
+    {  
         FOV_LR = FOV_Object.AddComponent<LineRenderer>();
         FOV_LR.name = "FOV_Draw";
-        FOV_LR.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
+
+        Material test = new Material(Shader.Find("Standard"));
+        test.color = Color.red;
+
+        FOV_LR.material = new Material(test);
         FOV_LR.positionCount = 12;
-        FOV_LR.startColor = Color.red;
-        FOV_LR.endColor = Color.red;
         FOV_LR.startWidth = 0.1f;
         FOV_LR.endWidth = 0.1f;
         FOV_LR.loop = true;

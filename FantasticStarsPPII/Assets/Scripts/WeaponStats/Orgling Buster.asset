@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de458b5205743d840acaed8d71a670b5, type: 3}
   m_Name: Orgling Buster
   m_EditorClassIdentifier: 
+  projectilePrefab: {fileID: 2038664226390778062, guid: 9ca6614f77ae6d742a7eda64b5b2f34c, type: 3}
   damage: 7
   rateOfFire: 25
-  range: 8
+  range: 10
+  bulletSpeed: 74
