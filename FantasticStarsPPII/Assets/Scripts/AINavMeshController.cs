@@ -61,7 +61,7 @@ public class AINavMeshController : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         //controller = GetComponent<CharacterController>();
-        FOV_Prototype_Initialization();
+        //FOV_Prototype_Initialization();
         GetComponent<SphereCollider>().radius = objectDetectionRange;
 
         homePoint = transform.position;
@@ -76,7 +76,7 @@ public class AINavMeshController : MonoBehaviour
         if (GetComponent<CharacterSheet>().isAlive)
         {
             //Debug Code - Field of View sight Lines
-            FOV_Prototype_Update();
+            //FOV_Prototype_Update();
             //Detect Enemy
             Check_EnterCombatMode();
 

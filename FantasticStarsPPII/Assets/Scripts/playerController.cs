@@ -197,7 +197,7 @@ public class playerController : MonoBehaviour, IDamageable
                 }
                 //this is the yield return to get the ienumerator to stop complaining
                 //"do something wait and do it again"
-                yield return new WaitForSeconds(1 / weaponEquipped.rateOfFire);
+                yield return new WaitForSeconds(weaponEquipped.rateOfFire);
 
                 isShooting = false;
 

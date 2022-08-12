@@ -25,7 +25,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     [Header("----- Weapon -----")]
     [SerializeField] bool isShooting;
     [SerializeField] float weaponDamage;
-    [Range(1, 60)] [SerializeField] int weaponFireRate;
+    [Range(1, 60)] [SerializeField] float weaponFireRate;
     [SerializeField] float weaponRange;
 
     public WeaponStats GetEquipWpn()

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 326872552114661775}
   - component: {fileID: 1009781433504193481}
+  - component: {fileID: 3478848713460303296}
   - component: {fileID: 326872552114661773}
   - component: {fileID: 326872552114661774}
   - component: {fileID: 326872552114661761}
@@ -61,6 +62,18 @@ MonoBehaviour:
   weaponDamage: 0
   weaponFireRate: 0
   weaponRange: 0
+--- !u!114 &3478848713460303296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 326872552114661763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1166d132882d2d468935b48b3c24d43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &326872552114661773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,8 +87,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 326872552114661772}
-  playerSpeed: 2
-  sprintMult: 2
+  playerSpeed: 5
+  sprintMult: 3
   jumpHeight: 8
   gravityValue: 15
   healthStat: []
