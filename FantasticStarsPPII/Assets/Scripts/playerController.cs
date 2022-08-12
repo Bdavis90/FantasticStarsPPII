@@ -54,7 +54,7 @@ public class playerController : MonoBehaviour, IDamageable
         sprint();
 
         //how u call an Ienumerator
-        StartCoroutine(shoot());
+       // StartCoroutine(shoot());
     }
 
     void playerMovement()
