@@ -7,6 +7,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     [Header("----- Adjustable Fields -----")]
     public Entity_Class classType;
     public Entity_Faction faction;
+    public GameObject bulletPrefab;
     public bool isAlive { get; set; }
 
     [Header("----- Object Manager -----")]
@@ -14,7 +15,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     //[SerializeField] string objectName = null;
 
     [Header("----- Attributes -----")]
-    [SerializeField] int baseMax;
+    [SerializeField] int baseHealth;
     [SerializeField] int health;
 
     [Header("----- Inventory -----")]
@@ -24,14 +25,9 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     [Header("----- Weapon -----")]
     [SerializeField] bool isShooting;
-    [SerializeField] float weaponDamage;
-    [Range(1, 60)] [SerializeField] float weaponFireRate;
+    [SerializeField] int weaponDamage;
+    [SerializeField] float weaponFireRate;
     [SerializeField] float weaponRange;
-
-    public WeaponStats GetEquipWpn()
-    {
-        return rightHand;
-    }
 
     void Start()
     {
@@ -45,6 +41,14 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            ShootWeapon();
+        }
+    }
+
     public ushort GetSpawnID()
     {
         return spawnID;
@@ -52,7 +56,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     public void ResetHealth()
     {
-        health = baseMax;
+        health = baseHealth;
     }
 
     public void takeDamage(int _damage)
@@ -71,13 +75,34 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         }
     }
 
-    public bool Weapon_Pickup(int _weaponDamage, int _rateOfFire, float _weaponRange, WeaponStats _weapon)
+    public void ShootWeapon()
+    {
+        if(rightHand != null && !isShooting)
+        {
+            StartCoroutine(FireWeapon());
+        }
+    }
+
+    IEnumerator FireWeapon()
+    {
+        isShooting = true;
+        if(GetComponent<ICharacterDirector>() != null)
+        {
+            //Pass equippedWeapon in Parameters
+            GetComponent<ICharacterDirector>().onShoot(rightHand);
+            yield return new WaitForSeconds(weaponFireRate);
+        }
+        
+        isShooting = false;
+    }
+
+    public bool Weapon_Pickup(WeaponStats _weapon)
     {
         bool isPickedup = false;
         if(rightHand == null)
         {
             rightHand = _weapon;
-            SwapWeapons(_weapon);
+            //SwapWeapons(_weapon);
             isPickedup = true;
         }
         
@@ -91,9 +116,9 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     public void SwapWeapons(WeaponStats _Weapon)
     {
-        weaponDamage = _Weapon.damage;
-        weaponFireRate = _Weapon.rateOfFire;
-        weaponRange = _Weapon.range;
+        //weaponDamage = _Weapon.damage;
+        //weaponFireRate = 1 / _Weapon.rateOfFire;
+        //weaponRange = _Weapon.range;
     }
 }
 

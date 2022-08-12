@@ -10,7 +10,6 @@ public class AINavMeshController : MonoBehaviour
     [SerializeField] float fieldOfView;
     [SerializeField] float viewDistance;
     [SerializeField] float objectDetectionRange;
-    //[SerializeField] float runSpeed;
     [SerializeField] int pathHomeTimer_Range;
     [SerializeField] bool HunterMode;
     [SerializeField] bool PatrolMode;
@@ -47,7 +46,6 @@ public class AINavMeshController : MonoBehaviour
 
     [Header("----- Character Controller Fields -----")]
     [SerializeField] float rotationSpeed = 5;
-    private Vector3 moveInputs = Vector3.zero;
 
     [Header("----- Head Pivot Parameters -----")]
     [SerializeField] float headPivotTime = 2;
@@ -56,6 +54,19 @@ public class AINavMeshController : MonoBehaviour
     [SerializeField] float headPivot_OffsetCur;
     [SerializeField] float headPivotSpeed;
 
+    public bool TryGetTarget(out Vector3 _targetDirection)
+    {
+        bool hasTarget = false;
+        _targetDirection = new Vector3();
+        //Vector3 _targetDirection;
+        if (VerfiyTargetSpawnExists())
+        {
+            hasTarget = true;
+            _targetDirection = RetrieveObjectDirection(gameManager.instance.GetIDPosition(Target));
+
+        }
+        return hasTarget;
+    }
 
     void Start()
     {
@@ -115,14 +126,15 @@ public class AINavMeshController : MonoBehaviour
                 //Combat Head Rotation keeps head rotated on Target
                 LockHeadToTarget(RelativeAngle(agent.nextPosition));
 
-                if(agent.remainingDistance <= agent.stoppingDistance)
+                if(agent.remainingDistance <= 15)//agent.stoppingDistance)
                 {
                     LerpRotateToTarget();
 
                     if (VerfiyTargetSpawnExists())
                     {
-                        IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
-                        damageable.takeDamage(1);
+                        GetComponent<CharacterSheet>().ShootWeapon();
+                        //IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
+                        //damageable.takeDamage(1);
                     }
                 }
 
@@ -341,16 +353,11 @@ public class AINavMeshController : MonoBehaviour
 
                             if (gameManager.instance.character_Spawns.ContainsKey(enemyID))
                             {
-                                RaycastHit hit;
-                                if (Physics.Raycast(transform.position, enemyDirection.normalized, out hit))
-                                {
-                                    if (hit.transform.gameObject == enemy)
-                                    {
-                                        Target = enemyID;
-                                        CombatMode = true;
-                                        HitList.Add(enemyID);
-                                    }
-                                }
+                                
+                                 Target = enemyID;
+                                 CombatMode = true;
+                                 HitList.Add(enemyID);
+
                             }
 
                         }

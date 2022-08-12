@@ -11,7 +11,7 @@ public class WeaponPickup : MonoBehaviour
         
         if (other.gameObject.GetComponent<CharacterSheet>() != null)
         {
-            bool isPickedup = other.gameObject.GetComponent<CharacterSheet>().Weapon_Pickup(weapon.damage, weapon.rateOfFire, weapon.range, weapon);
+            bool isPickedup = other.gameObject.GetComponent<CharacterSheet>().Weapon_Pickup(weapon);
             if (isPickedup)
             {
                 Destroy(gameObject);

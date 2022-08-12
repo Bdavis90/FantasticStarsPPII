@@ -87,8 +87,8 @@ MonoBehaviour:
   classType: 10
   faction: 200
   spawnID: 0
-  baseMax: 0
-  health: 0
+  baseMax: 25
+  health: 25
   rightHand: {fileID: 0}
   gunBag: []
   isShooting: 0

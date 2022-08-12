@@ -19,6 +19,27 @@ public class AICharacter : MonoBehaviour, ICharacterDirector
 
     }
 
+    public void onShoot(WeaponStats _equippedWeapon)
+    {
+        if(GetComponent<AINavMeshController>() != null)
+        {
+
+            Vector3 direction;
+            if (GetComponent<AINavMeshController>().TryGetTarget(out direction))
+            {
+                GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, transform.position + (transform.forward * 2), Quaternion.LookRotation(direction));
+                projectile.GetComponent<projectile_StaticMotion>().SetWeaponStats(_equippedWeapon);
+            }
+            
+
+
+        }
+
+        
+        //GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, transform.position + (transform.forward * 2), Camera.main.transform.rotation);
+        
+    }
+
     IEnumerator DestroyCorpse()
     {
         yield return new WaitForSeconds(corpseTimer);

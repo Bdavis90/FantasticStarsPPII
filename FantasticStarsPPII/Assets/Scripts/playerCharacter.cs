@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class playerCharacter : MonoBehaviour, ICharacterDirector
 {
+
+
     public void onDeath()
     {
         //Debug.Log("Player Died");
@@ -20,6 +22,11 @@ public class playerCharacter : MonoBehaviour, ICharacterDirector
         StartCoroutine(HUDFlash());
     }
 
+    public void onShoot(WeaponStats _equippedWeapon)
+    {
+        GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, transform.position + (transform.forward * 2), Camera.main.transform.rotation);
+        projectile.GetComponent<projectile_StaticMotion>().SetWeaponStats(_equippedWeapon);
+    }
     private IEnumerator DelayedPlayerSpawn()
     {
 

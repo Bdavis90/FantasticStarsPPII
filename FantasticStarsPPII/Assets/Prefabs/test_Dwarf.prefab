@@ -55,13 +55,14 @@ MonoBehaviour:
   classType: 10
   faction: 100
   spawnID: 0
-  baseMax: 0
-  health: 0
-  mainHand: []
+  baseMax: 34
+  health: 34
+  rightHand: {fileID: 0}
+  gunBag: []
   isShooting: 0
-  rateOfFire: 0
-  weaponRange: 0
   weaponDamage: 0
+  weaponFireRate: 0
+  weaponRange: 0
 --- !u!114 &6777328147301894857
 MonoBehaviour:
   m_ObjectHideFlags: 0
