@@ -14,7 +14,16 @@ public class projectile_StaticMotion : MonoBehaviour
 
     private void Start()
     {
+
         StartCoroutine(AutoDestruction());
+        Instantiate(weapon.effectsPrefab, gameObject.transform);
+
+        float randomRange = weapon.accuracyScale - (weapon.accuracyScale * weapon.accuracy);
+        float ranx = Random.Range(-randomRange, randomRange);
+        float rany = Random.Range(-randomRange, randomRange);
+        transform.Rotate(Vector3.up * rany);
+        transform.Rotate(Vector3.right * ranx);       
+        
     }
 
     void Update()
@@ -24,12 +33,14 @@ public class projectile_StaticMotion : MonoBehaviour
 
     public void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Bullet Collided with a gameObject");
-        if(collision.gameObject.GetComponent<IDamageable>() != null)
-        {
-            collision.gameObject.GetComponent<IDamageable>().takeDamage(weapon.damage);
-        }
-        Destroy(gameObject);
+        Debug.Log("hit");
+            if (collision.gameObject.GetComponent<IDamageable>() != null)
+            {
+                collision.gameObject.GetComponent<IDamageable>().takeDamage(weapon.damage);
+                Instantiate(weapon.effectsPrefab, gameObject.transform);
+            }
+            Destroy(gameObject);
+
     }
 
     IEnumerator AutoDestruction()

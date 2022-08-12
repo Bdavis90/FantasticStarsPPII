@@ -176,14 +176,16 @@ public class playerController : MonoBehaviour, IDamageable
                 isShooting = true;
                 //raycast is using physic lib
                 RaycastHit hit; //returns information of what we hit
-                if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f)), out hit, shootDist))
+                if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)), out hit, shootDist))
                 {
+                    
                     if (hit.collider.GetComponent<IDamageable>() != null)
                     {
                         IDamageable isDamageable = hit.collider.GetComponent<IDamageable>();
 
                         if (hit.collider is SphereCollider)
                         {
+                            Debug.Log(weaponEquipped.damage);
                             //head shot
                             isDamageable.takeDamage(weaponEquipped.damage * 2);
                         }

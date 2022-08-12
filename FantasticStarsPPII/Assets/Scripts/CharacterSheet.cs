@@ -79,7 +79,11 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     {
         if(rightHand != null && !isShooting)
         {
-            StartCoroutine(FireWeapon());
+            
+            {
+                StartCoroutine(FireWeapon());
+            }
+            
         }
     }
 
@@ -88,9 +92,13 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         isShooting = true;
         if(GetComponent<ICharacterDirector>() != null)
         {
-            //Pass equippedWeapon in Parameters
-            GetComponent<ICharacterDirector>().onShoot(rightHand);
-            yield return new WaitForSeconds(weaponFireRate);
+            for (int i = 0; i < rightHand.shotQuantity; i++)
+            {
+                //Pass equippedWeapon in Parameters
+                GetComponent<ICharacterDirector>().onShoot(rightHand);
+                yield return new WaitForSeconds(weaponFireRate);
+            }
+
         }
         
         isShooting = false;

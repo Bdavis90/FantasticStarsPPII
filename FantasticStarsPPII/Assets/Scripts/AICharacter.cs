@@ -1,6 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
+
+/**************************************************************/
+/*        Enemy AI Specific Character Sheet Behaviors         */
+/**************************************************************/
+
 
 public class AICharacter : MonoBehaviour, ICharacterDirector
 {
@@ -21,7 +27,16 @@ public class AICharacter : MonoBehaviour, ICharacterDirector
 
     public void onShoot(WeaponStats _equippedWeapon)
     {
-        if(GetComponent<AINavMeshController>() != null)
+        //if (GetComponent<NavMeshAgent>() != null)
+        //{       
+        //NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        //Vector3 test = agent.nextPosition - transform.position;
+        //GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, transform.position + (transform.forward * 2), Quaternion.LookRotation(test));
+        //projectile.GetComponent<projectile_StaticMotion>().SetWeaponStats(_equippedWeapon);
+        //}
+
+        //TODO:: Get Weapon Container Gameobject forplayer. Instantiate bullet at that location
+        if (GetComponent<AINavMeshController>() != null)
         {
 
             Vector3 direction;
@@ -30,14 +45,12 @@ public class AICharacter : MonoBehaviour, ICharacterDirector
                 GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, transform.position + (transform.forward * 2), Quaternion.LookRotation(direction));
                 projectile.GetComponent<projectile_StaticMotion>().SetWeaponStats(_equippedWeapon);
             }
-            
+
 
 
         }
 
-        
-        //GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, transform.position + (transform.forward * 2), Camera.main.transform.rotation);
-        
+
     }
 
     IEnumerator DestroyCorpse()
