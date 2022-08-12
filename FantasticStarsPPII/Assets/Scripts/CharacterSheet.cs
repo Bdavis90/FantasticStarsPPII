@@ -18,13 +18,16 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     [SerializeField] int health;
 
     [Header("----- Inventory -----")]
-    [SerializeField] List<GameObject> mainHand = new List<GameObject>();
+    [SerializeField] WeaponStats rightHand = null;
+    [SerializeField] List<WeaponStats> gunBag = new List<WeaponStats>();
+    
 
     [Header("----- Weapon -----")]
     [SerializeField] bool isShooting;
-    [Range(1, 60)] [SerializeField] int rateOfFire;
-    [SerializeField] float weaponRange;
     [SerializeField] float weaponDamage;
+    [Range(1, 60)] [SerializeField] int weaponFireRate;
+    [SerializeField] float weaponRange;
+
 
     void Start()
     {
@@ -63,7 +66,34 @@ public class CharacterSheet : MonoBehaviour, IDamageable
             }
         }
     }
+
+    public bool Weapon_Pickup(int _weaponDamage, int _rateOfFire, float _weaponRange, WeaponStats _weapon)
+    {
+        bool isPickedup = false;
+        if(rightHand == null)
+        {
+            rightHand = _weapon;
+            SwapWeapons(_weapon);
+            isPickedup = true;
+        }
+        
+        if (!gunBag.Contains(_weapon))
+        {
+            gunBag.Add(_weapon);
+            isPickedup = true;
+        }
+        return isPickedup;
+    }
+
+    public void SwapWeapons(WeaponStats _Weapon)
+    {
+        weaponDamage = _Weapon.damage;
+        weaponFireRate = _Weapon.rateOfFire;
+        weaponRange = _Weapon.range;
+    }
 }
+
+
 
 public enum Entity_Class
 {
