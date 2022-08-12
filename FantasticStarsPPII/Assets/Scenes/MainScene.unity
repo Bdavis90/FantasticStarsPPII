@@ -15763,6 +15763,10 @@ PrefabInstance:
       value: Floor
       objectReference: {fileID: 0}
     - target: {fileID: 2799597214263781466, guid: c050e5f9bf4de324fae206a53e33dc03, type: 3}
+      propertyPath: m_NavMeshLayer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2799597214263781466, guid: c050e5f9bf4de324fae206a53e33dc03, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 8
       objectReference: {fileID: 0}
