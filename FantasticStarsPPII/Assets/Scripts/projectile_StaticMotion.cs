@@ -6,16 +6,23 @@ public class projectile_StaticMotion : MonoBehaviour
 {
     
     [SerializeField] public WeaponStats weapon;
+    [SerializeField] float rangeDestruction;
 
     public void SetWeaponStats(WeaponStats _weapon)
     {
         weapon = _weapon;
+        rangeDestruction = weapon.range;
     }
 
 
     void Update()
     {
-        transform.position += transform.forward * weapon.bulletSpeed * Time.deltaTime;    
+        transform.position += transform.forward * weapon.bulletSpeed * Time.deltaTime;
+        rangeDestruction -= Time.deltaTime;
+        if(rangeDestruction < 0)
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void OnCollisionEnter(Collision collision)

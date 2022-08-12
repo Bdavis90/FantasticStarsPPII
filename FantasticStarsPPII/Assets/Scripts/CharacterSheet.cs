@@ -116,9 +116,9 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     public void SwapWeapons(WeaponStats _Weapon)
     {
-        //weaponDamage = _Weapon.damage;
-        //weaponFireRate = 1 / _Weapon.rateOfFire;
-        //weaponRange = _Weapon.range;
+        weaponDamage = _Weapon.damage;
+        weaponFireRate = 1 / _Weapon.rateOfFire;
+        weaponRange = _Weapon.range;
     }
 }
 

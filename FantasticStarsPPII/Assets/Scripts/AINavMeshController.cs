@@ -528,8 +528,12 @@ public class AINavMeshController : MonoBehaviour
         else
         {
             //If not in world, clean Lists
-            Allies.Remove(Target);
-            Enemies.Remove(Target);
+            if(Allies != null || Enemies != null)
+            {
+                Allies.Remove(Target);
+                Enemies.Remove(Target);
+            }
+
             Target = 0;
             CombatMode = false;
         }

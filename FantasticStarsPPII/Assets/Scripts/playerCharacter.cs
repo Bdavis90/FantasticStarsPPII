@@ -24,7 +24,7 @@ public class playerCharacter : MonoBehaviour, ICharacterDirector
 
     public void onShoot(WeaponStats _equippedWeapon)
     {
-        GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, transform.position + (transform.forward * 2), Camera.main.transform.rotation);
+        GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, Camera.main.transform.position + (transform.forward * 2), Camera.main.transform.rotation);
         projectile.GetComponent<projectile_StaticMotion>().SetWeaponStats(_equippedWeapon);
     }
     private IEnumerator DelayedPlayerSpawn()
