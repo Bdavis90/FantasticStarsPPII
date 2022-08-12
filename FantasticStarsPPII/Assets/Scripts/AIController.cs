@@ -2,14 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EntityAI : MonoBehaviour
+
+public class AIController : MonoBehaviour
 {
     [Header("----- Adjustable Fields -----")]
     [SerializeField] GameObject FOV_Object;
     [SerializeField] float fieldOfView;
     [SerializeField] float viewDistance;
     [SerializeField] float objectDetectionRange;
-    [SerializeField] float runSpeed;  
+    [SerializeField] float runSpeed;
     [SerializeField] int pathHomeTimer_Range;
     [SerializeField] bool HunterMode;
     [SerializeField] bool PatrolMode;
@@ -17,20 +18,17 @@ public class EntityAI : MonoBehaviour
 
 
     [Header("----- Character General -----")]
-    //[SerializeField] ushort spawnID;
-    //[SerializeField] bool isAlive = true;
     private CharacterController controller;
     private LineRenderer FOV_LR;
     private bool cleanupOnDeath = true;
     private bool cycleHitList = false;
-    
+
     [Header("----- Character Lists -----")]
     [SerializeField] ushort Target;
     [SerializeField] List<ushort> HitList = new List<ushort>();
     [SerializeField] List<ushort> Enemies = new List<ushort>();
     [SerializeField] List<ushort> Allies = new List<ushort>();
-    //[SerializeField] List<GameObject> environmentObjects;
-    //[SerializeField] List<GameObject> abilityObjects;
+
 
     [Header("----- Home Parameters -----")]
     [SerializeField] Vector3 homePoint;
@@ -39,10 +37,8 @@ public class EntityAI : MonoBehaviour
 
     [Header("----- Destinations -----")]
     [SerializeField] Vector3 nextMoveDestination;
-    //[SerializeField] bool atDestination = false;
     [SerializeField] float destinationAngle;
     [SerializeField] float targetAngle;
-    //[SerializeField] bool hasTarget;
 
     [Header("----- Modes -----")]
     [SerializeField] bool CombatMode;
@@ -63,22 +59,6 @@ public class EntityAI : MonoBehaviour
     [SerializeField] float headPivotSpeed;
 
 
-    /*******************************************/
-    /*          Getters and Setters            */
-    /*******************************************/
-    #region Setters
-    //public void SetSpawnID(ushort _id)
-    //{
-    //    spawnID = _id;
-    //}
-
-    //public void SetAlive(bool _value)
-    //{
-    //    isAlive = _value;
-    //}
-
-
-    #endregion
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -90,15 +70,15 @@ public class EntityAI : MonoBehaviour
             homePoint = transform.position;
         else
             StartCoroutine(SetHomePoint());
-        
+
         homePointDirection = GlobalAngularDisplacement(transform.forward);
-        
+
     }
 
     private void FixedUpdate()
     {
         //Only do if alive
-        if (GetComponent<Entity>().IsAlive())
+        if (GetComponent<CharacterSheet>().isAlive)
         {
             //Debug Code - Field of View sight Lines
             FOV_Prototype_Update();
@@ -106,7 +86,7 @@ public class EntityAI : MonoBehaviour
             Check_EnterCombatMode();
 
             //Temp Code:: to Keep allies tracking uptodate.
-            if(Allies.Count > 0)
+            if (Allies.Count > 0)
             {
                 List<ushort> newAllies = new List<ushort>();
                 foreach (ushort ally in Allies)
@@ -132,7 +112,7 @@ public class EntityAI : MonoBehaviour
 
                 //Set Destination. Target may not always be the player
                 //TODO:: Fancy Destination logic needed
-                if (VerfiyTargetSpawnExists()) 
+                if (VerfiyTargetSpawnExists())
                 {
                     nextMoveDestination = gameManager.instance.GetIDPosition(Target); // <----- TODO:: Temporary PlaceHolder solution
                     destinationAngle = RelativeAngle(nextMoveDestination);
@@ -151,10 +131,10 @@ public class EntityAI : MonoBehaviour
                     controller.Move(transform.forward * runSpeed * Time.fixedDeltaTime);
                 }
                 else
-                {                
+                {
                     if (VerfiyTargetSpawnExists())
                     {
-                        IDamageable damageable = gameManager.instance.entitySpawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
+                        IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
                         damageable.takeDamage(1);
                         //cycleHitList = true; DELETE
                     }
@@ -178,7 +158,7 @@ public class EntityAI : MonoBehaviour
                     float ranZ = Random.Range(-40, 40);
                     homePoint = new Vector3(ranX, transform.position.y, ranZ);
                     WanderMode = false;
-                    if(pathHomeTimer <= 0)
+                    if (pathHomeTimer <= 0)
                     {
                         pathHomeTimer = Random.Range(0, pathHomeTimer_Range);
                     }
@@ -243,7 +223,7 @@ public class EntityAI : MonoBehaviour
 
             }
         }
-        
+
         //simple Gravity
         if (controller.isGrounded)
         {
@@ -259,26 +239,25 @@ public class EntityAI : MonoBehaviour
     /*          (Collider Triggers)            */
     /*******************************************/
     #region AI List Managment
-        /*******************************************/
-        /*     (Trigger)Add Objects to Lists       */
-        /*******************************************/
+    /*******************************************/
+    /*     (Trigger)Add Objects to Lists       */
+    /*******************************************/
     #region List Updater(Add)
     private void OnTriggerEnter(Collider other)
     {
-        
-        if (other.gameObject.GetComponent<Entity>() != null)
+        if (other.gameObject.GetComponent<CharacterSheet>() != null)
         {
             //TODO:: Clean UP
-            ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
-            ushort thisSpawnID = GetComponent<Entity>().GetSpawnID();
-            EntityManager otherEntity;
-            EntityManager thisEntity = gameManager.instance.entitySpawns.GetValueOrDefault(thisSpawnID);
+            ushort otherSpawnID = other.gameObject.GetComponent<CharacterSheet>().GetSpawnID();
+            ushort thisSpawnID = GetComponent<CharacterSheet>().GetSpawnID();
+            CharacterManager otherEntity;
+            CharacterManager thisEntity = gameManager.instance.character_Spawns.GetValueOrDefault(thisSpawnID);
 
-            if (gameManager.instance.entitySpawns.TryGetValue(otherSpawnID, out otherEntity))
+            if (gameManager.instance.character_Spawns.TryGetValue(otherSpawnID, out otherEntity))
             {
 
                 //if Either is dead
-                if (!otherEntity.GetEntity().IsAlive() || !GetComponent<Entity>().IsAlive())
+                if (!otherEntity.GetEntity().isAlive || !GetComponent<CharacterSheet>().isAlive)
                 {
 
                     //Ignore Corpses for Now
@@ -314,18 +293,18 @@ public class EntityAI : MonoBehaviour
         }
     }
     #endregion
-        /*******************************************/
-        /*      (Trigger) Remove from Lists        */
-        /*******************************************/
+    /*******************************************/
+    /*      (Trigger) Remove from Lists        */
+    /*******************************************/
     #region List Updater(Remove)
     private void OnTriggerExit(Collider other)
     {
         //Purpose of this method is to remove unnessary objects from Lists.
         //No code to change behavior is in this method.
-        if (other.gameObject.GetComponent<Entity>() != null)
+        if (other.gameObject.GetComponent<CharacterSheet>() != null)
         {
-            ushort otherSpawnID = other.gameObject.GetComponent<Entity>().GetSpawnID();
-            if(GetComponent<Entity>().IsAlive())
+            ushort otherSpawnID = other.gameObject.GetComponent<CharacterSheet>().GetSpawnID();
+            if (GetComponent<CharacterSheet>().isAlive)
             {
                 Allies.Remove(otherSpawnID);
                 Enemies.Remove(otherSpawnID);
@@ -347,7 +326,7 @@ public class EntityAI : MonoBehaviour
     #region Check Enemy positions from List
     private void Check_EnterCombatMode()
     {
-        
+
         if (HitList.Count > 0)
         {
             //Keep HitList Clean
@@ -365,9 +344,9 @@ public class EntityAI : MonoBehaviour
             }
 
             //Temporary targeting Code until an Aggro system is invented
-            if (gameManager.instance.entitySpawns.ContainsKey(HitList[0]))
+            if (gameManager.instance.character_Spawns.ContainsKey(HitList[0]))
             {
-                Target = HitList[0]; 
+                Target = HitList[0];
                 CombatMode = true;
             }
             else
@@ -381,13 +360,13 @@ public class EntityAI : MonoBehaviour
             {
                 List<ushort> UpdatedList = new List<ushort>(4);
                 //Check Enemy List
-                foreach(ushort enemyID in Enemies)
+                foreach (ushort enemyID in Enemies)
                 {
-                    if (gameManager.instance.entitySpawns.ContainsKey(enemyID))
+                    if (gameManager.instance.character_Spawns.ContainsKey(enemyID))
                     {
                         UpdatedList.Add(enemyID);
 
-                        GameObject enemy = gameManager.instance.entitySpawns.GetValueOrDefault(enemyID).GetGameObject();
+                        GameObject enemy = gameManager.instance.character_Spawns.GetValueOrDefault(enemyID).GetGameObject();
                         Vector3 enemyDirection = RetrieveObjectDirection(enemy.transform.position);
                         float globalDisplacement = GlobalAngularDisplacement(enemyDirection);
                         float localDisplacement = RelativeAngle(globalDisplacement);
@@ -395,11 +374,11 @@ public class EntityAI : MonoBehaviour
                         //If Enemy Detected, Enter Combat Mode
                         if (enemyDirection.magnitude <= viewDistance && Mathf.Abs(localDisplacement) + headPivot_OffsetCur <= (fieldOfView / 2))
                         {
-                            
-                            if (gameManager.instance.entitySpawns.ContainsKey(enemyID))
+
+                            if (gameManager.instance.character_Spawns.ContainsKey(enemyID))
                             {
                                 RaycastHit hit;
-                                if(Physics.Raycast(transform.position, enemyDirection.normalized, out hit))
+                                if (Physics.Raycast(transform.position, enemyDirection.normalized, out hit))
                                 {
                                     if (hit.transform.gameObject == enemy)
                                     {
@@ -418,9 +397,9 @@ public class EntityAI : MonoBehaviour
         }
     }
     #endregion
-        /*******************************************/
-        /*           LookoutMode Behavior          */
-        /*******************************************/
+    /*******************************************/
+    /*           LookoutMode Behavior          */
+    /*******************************************/
     #region Lookout Mode Behavior
     private void DoLookOutMode()
     {
@@ -434,9 +413,9 @@ public class EntityAI : MonoBehaviour
         SmoothHeading(headPivot_LookoutRange);
     }
     #endregion
-        /*******************************************/
-        /*           Lock Head to Target          */
-        /*******************************************/
+    /*******************************************/
+    /*           Lock Head to Target          */
+    /*******************************************/
     #region Lock Head to Target
     private void LockHeadToTarget(float _Destination)
     {
@@ -474,20 +453,20 @@ public class EntityAI : MonoBehaviour
         //gameObject.SetActive(true);
     }
     #endregion
-        /*******************************************/
-        /*    Gets this Heading in Euler Angles    */
-        /*******************************************/
+    /*******************************************/
+    /*    Gets this Heading in Euler Angles    */
+    /*******************************************/
     #region Heading()
     //Returns Euler Angle based on Object Rotation Y Component
     private float Heading()
     {
-        
+
         return transform.rotation.eulerAngles.y;
     }
     #endregion
-        /*******************************************/
-        /*         Retrieve Object Direction       */
-        /*******************************************/
+    /*******************************************/
+    /*         Retrieve Object Direction       */
+    /*******************************************/
     #region RetrieveTargetDirection()
     //Retrieves direction vector to object
     private Vector3 RetrieveObjectDirection(Vector3 _otherObject)
@@ -500,20 +479,20 @@ public class EntityAI : MonoBehaviour
         return direction;
     }
     #endregion
-        /*******************************************/
-        /*    Difference in Global Euler Angles    */
-        /*******************************************/
+    /*******************************************/
+    /*    Difference in Global Euler Angles    */
+    /*******************************************/
     #region GlobalAngularDisplacement()
     private float GlobalAngularDisplacement(Vector3 _otherPoint)
-    {       
-        
+    {
+
         float angle = Mathf.Atan2(_otherPoint.x, _otherPoint.z) * Mathf.Rad2Deg;
         return angle;
     }
     #endregion
-        /*******************************************/
-        /*     Difference in local EulerAngles     */
-        /*******************************************/
+    /*******************************************/
+    /*     Difference in local EulerAngles     */
+    /*******************************************/
     #region RelativeAngle(float)
     private float RelativeAngle(float _globalAngle)
     {
@@ -528,9 +507,9 @@ public class EntityAI : MonoBehaviour
     }
     #endregion
 
-        /*******************************************/
-        /*        Smooth Heading rotation          */
-        /*******************************************/
+    /*******************************************/
+    /*        Smooth Heading rotation          */
+    /*******************************************/
     #region Realistic Head Movement over instantly snapping to direction
     private void SmoothHeading(float _lookDestination)
     {
@@ -550,14 +529,14 @@ public class EntityAI : MonoBehaviour
     }
     #endregion
 
-        /*******************************************/
-        /*        Quick Call to GameManager        */
-        /*******************************************/
+    /*******************************************/
+    /*        Quick Call to GameManager        */
+    /*******************************************/
     #region VerifyTargetSpawnExists()
     private bool VerfiyTargetSpawnExists()
     {
         bool isThere = false;
-        if (gameManager.instance.entitySpawns.ContainsKey(Target))
+        if (gameManager.instance.character_Spawns.ContainsKey(Target))
         {
             isThere = true;
         }
@@ -599,23 +578,23 @@ public class EntityAI : MonoBehaviour
         FOV_LR.loop = true;
         FOV_Prototype_Update();
     }
-        /*******************************************/
-        /*   Update Field of View lines to object  */
-        /*******************************************/
+    /*******************************************/
+    /*   Update Field of View lines to object  */
+    /*******************************************/
     private void FOV_Prototype_Update()
     {
         FOV_LR.SetPosition(0, transform.position);
-        for(int i = 0; i <= 10; i++)
+        for (int i = 0; i <= 10; i++)
         {
             //Field of View in Euler Angles      
             float theta = Mathf.Deg2Rad * (i * (fieldOfView / 10) + Heading() + headPivot_OffsetCur - (fieldOfView / 2));
             Vector3 fov_Point = new Vector3(
-                Mathf.Sin(theta), 
-                0f, 
+                Mathf.Sin(theta),
+                0f,
                 Mathf.Cos(theta)) * viewDistance;
 
             FOV_LR.SetPosition(i + 1, fov_Point + transform.position);
-              
+
         }
     }
     #endregion
