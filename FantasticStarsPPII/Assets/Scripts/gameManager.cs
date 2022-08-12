@@ -5,7 +5,6 @@ using UnityEngine;
 public class gameManager : MonoBehaviour
 {
     public static gameManager instance;
-
     public GameObject player;
     public playerController playerScript;
 
@@ -16,6 +15,9 @@ public class gameManager : MonoBehaviour
     public GameObject playerDeadMenu;
 
     public GameObject playerSpawnPos;
+
+    public ushort spawnID = 0;
+    public Dictionary<ushort, EntityManager> entitySpawns = new Dictionary<ushort, EntityManager>(100);
 
 
     public bool isPaused;
@@ -29,7 +31,6 @@ public class gameManager : MonoBehaviour
         playerScript.respawn();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetButtonDown("Cancel") && playerScript.hp > 0)
@@ -60,4 +61,52 @@ public class gameManager : MonoBehaviour
         currentMenuOpen.SetActive(isPaused);
         currentMenuOpen = null;
     }
+
+
+
+
+    /*******************************************/
+    /*        spawn Dictionary Methods         */
+    /*******************************************/
+    #region Dictionary Methods
+    public ushort GenerateCharacterID()
+    {
+        bool checkID = true;
+        ushort IDresult = 0;
+
+
+        while (checkID)
+        {
+            //0 is Reserved for Null Reference
+            if (spawnID == 0)
+            {
+                spawnID++;
+            }
+            //Loop Until a used ID is found. Maximum Existing Game = 65535
+            if (entitySpawns.ContainsKey(spawnID))
+            {
+                spawnID++;
+            }
+            else
+            {
+                IDresult = spawnID;
+                checkID = false;
+            }
+        }
+        return IDresult;
+    }
+    public void AddCharacter_to_GameManager(ushort _key, EntityManager _objectPair)
+    {
+        entitySpawns.Add(_key, _objectPair);
+    }
+    public bool ContainsSpawn(ushort _ID)
+    {
+        return entitySpawns.ContainsKey(_ID);
+    }
+    public Vector3 GetIDPosition(ushort _ID)
+    {
+        return entitySpawns.GetValueOrDefault(_ID).GetGameObject().transform.position;
+    }
+    #endregion
 }
+

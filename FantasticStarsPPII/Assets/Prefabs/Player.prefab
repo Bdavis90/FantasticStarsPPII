@@ -9,10 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 326872552114661775}
+  - component: {fileID: 326872552114661773}
   - component: {fileID: 326872552114661774}
   - component: {fileID: 326872552114661761}
   - component: {fileID: 326872552114661760}
-  - component: {fileID: 326872552114661773}
   - component: {fileID: 326872552114661772}
   m_Layer: 0
   m_Name: Player
@@ -31,11 +31,35 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 326872552165751954}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &326872552114661773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 326872552114661763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 812c8fd3dd86c8c45b11fb6247ca6504, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 326872552114661772}
+  playerSpeed: 2
+  sprintMult: 2
+  jumpHeight: 8
+  gravityValue: 15
+  jumpsMax: 1
+  HP: 0
+  shootRate: 0.65
+  shootDist: 5
+  shootDamage: 3
+  gunstat: []
 --- !u!33 &326872552114661774
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -55,6 +79,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -99,27 +124,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &326872552114661773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 326872552114661763}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 812c8fd3dd86c8c45b11fb6247ca6504, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controller: {fileID: 326872552114661772}
-  playerSpeed: 2
-  sprintMult: 2
-  jumpHeight: 8
-  gravityValue: 15
-  jumpsMax: 1
-  shootRate: 0
-  shootDist: 0
-  shootDamage: 0
 --- !u!143 &326872552114661772
 CharacterController:
   m_ObjectHideFlags: 0
@@ -167,6 +171,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 326872552114661775}
   m_RootOrder: 0

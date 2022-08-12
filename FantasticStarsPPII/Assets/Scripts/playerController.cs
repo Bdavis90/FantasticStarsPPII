@@ -16,14 +16,19 @@ public class playerController : MonoBehaviour, IDamageable
     [Range(1, 4)] [SerializeField] float sprintMult;
     [Range(8, 20)] [SerializeField] float jumpHeight;
     [Range(15, 30)] [SerializeField] float gravityValue;
+
+    [SerializeField] List<healthStats> healthStat = new List<healthStats>();
+    [Range(0, 10)] public int hp;
     [Range(1, 3)][SerializeField] int jumpsMax;
-    [Range(0, 10)][SerializeField] public int hp;
+
 
     [Header("-----Weapon Stats-----")]
     [Range(0.1f, 5)] [SerializeField] float shootRate;
     [Range(1, 30)] [SerializeField] int shootDist;
     [Range(1, 10)] [SerializeField] int shootDamage;
-    //[SerializeField] List<gunStats> gunstat = new List<gunStats>();
+   // [SerializeField] List<gunStats> gunstat = new List<gunStats>();
+
+    Vector3 playerDir;
 
     private Vector3 playerVelocity;
     Vector3 move = Vector3.zero;
@@ -32,6 +37,9 @@ public class playerController : MonoBehaviour, IDamageable
     bool isSprinting = false;
     bool isShooting = false;
     private int hpOrig;
+    bool isleaningRight = false;
+    bool isleaningLeft = false;
+
 
 
     private void Start()
@@ -42,13 +50,11 @@ public class playerController : MonoBehaviour, IDamageable
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.K))
-            takeDamage(1);
         playerMovement();
         sprint();
 
         //how u call an Ienumerator
-        //StartCoroutine(shoot());
+       // StartCoroutine(shoot());
     }
 
     void playerMovement()
@@ -76,6 +82,30 @@ public class playerController : MonoBehaviour, IDamageable
         //applies the gravity, drags the player down
         playerVelocity.y -= gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
+
+
+        //if (Input.GetButtonDown("Lean Left"))
+        //{
+        //    playerDir.x = 0;
+        //    playerDir.y = 0;
+        //    playerDir.z = 20;
+        //    Quaternion rotation = Quaternion.LookRotation(playerDir);
+        //    transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * 1);
+        //}
+        //if (Input.GetButtonUp("Lean Left"))
+        //{
+        //    transform.localRotation = Quaternion.Euler(0, 0, 0);
+        //}
+
+        //if (Input.GetButtonDown("Lean Right"))
+        //{
+        //    transform.localRotation = Quaternion.Euler(0, 0, -20);
+        //}
+        //if (Input.GetButtonUp("Lean Right"))
+        //{
+        //    transform.localRotation = Quaternion.Euler(0, 0, 0);
+        //}
+
     }
 
     void sprint()
@@ -149,7 +179,17 @@ public class playerController : MonoBehaviour, IDamageable
     //            {
     //                IDamageable isDamageable = hit.collider.GetComponent<IDamageable>();
 
-    //                isDamageable.takeDamage(shootDamage);
+    //                if (hit.collider is SphereCollider)
+    //                {
+    //                    //head shot
+    //                    isDamageable.takeDamage(shootDamage * 2);
+    //                }
+    //                else
+    //                {
+    //                    //body shoot
+    //                    isDamageable.takeDamage(shootDamage);
+    //                }
+
     //            }
     //        }
     //        //this is the yield return to get the ienumerator to stop complaining
@@ -161,11 +201,10 @@ public class playerController : MonoBehaviour, IDamageable
     //    }
     //}
 
-    //public void gunPickup(float shootrate, int shootdist, int shootdamage, gunStats stats)
-    //{
-    //    shootRate = shootrate;
-    //    shootDist = shootdist;
-    //    shootDamage = shootdamage;
-    //    gunstat.Add(stats);
-    //}
+
+    public void healthPickUp(int Hp, healthStats stat)
+    {
+        hp = Hp;
+        healthStat.Add(stat);
+    }
 }
