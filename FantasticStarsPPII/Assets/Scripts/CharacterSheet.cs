@@ -18,8 +18,8 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     [SerializeField] int health;
 
     [Header("----- Inventory -----")]
-    [SerializeField] WeaponStats rightHand = null;
-    [SerializeField] List<WeaponStats> gunBag = new List<WeaponStats>();
+    [SerializeField] public WeaponStats rightHand = null;
+    [SerializeField] public List<WeaponStats> gunBag = new List<WeaponStats>();
     
 
     [Header("----- Weapon -----")]
@@ -28,6 +28,10 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     [Range(1, 60)] [SerializeField] int weaponFireRate;
     [SerializeField] float weaponRange;
 
+    public WeaponStats GetEquipWpn()
+    {
+        return rightHand;
+    }
 
     void Start()
     {
