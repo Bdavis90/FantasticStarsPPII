@@ -17,7 +17,8 @@ public class gameManager : MonoBehaviour
     public GameObject playerSpawnPos;
 
     public ushort spawnID = 0;
-    public Dictionary<ushort, EntityManager> entitySpawns = new Dictionary<ushort, EntityManager>(100);
+    //public Dictionary<ushort, EntityManager> entitySpawns = new Dictionary<ushort, EntityManager>(100);
+    public Dictionary<ushort, CharacterManager> character_Spawns = new Dictionary<ushort, CharacterManager>(100);
 
 
     public bool isPaused;
@@ -63,8 +64,6 @@ public class gameManager : MonoBehaviour
     }
 
 
-
-
     /*******************************************/
     /*        spawn Dictionary Methods         */
     /*******************************************/
@@ -83,7 +82,7 @@ public class gameManager : MonoBehaviour
                 spawnID++;
             }
             //Loop Until a used ID is found. Maximum Existing Game = 65535
-            if (entitySpawns.ContainsKey(spawnID))
+            if (character_Spawns.ContainsKey(spawnID))
             {
                 spawnID++;
             }
@@ -95,17 +94,17 @@ public class gameManager : MonoBehaviour
         }
         return IDresult;
     }
-    public void AddCharacter_to_GameManager(ushort _key, EntityManager _objectPair)
+    public void AddCharacter_to_GameManager(ushort _key, CharacterManager _objectPair)
     {
-        entitySpawns.Add(_key, _objectPair);
+        character_Spawns.Add(_key, _objectPair);
     }
     public bool ContainsSpawn(ushort _ID)
     {
-        return entitySpawns.ContainsKey(_ID);
+        return character_Spawns.ContainsKey(_ID);
     }
     public Vector3 GetIDPosition(ushort _ID)
     {
-        return entitySpawns.GetValueOrDefault(_ID).GetGameObject().transform.position;
+        return character_Spawns.GetValueOrDefault(_ID).GetGameObject().transform.position;
     }
     #endregion
 }
