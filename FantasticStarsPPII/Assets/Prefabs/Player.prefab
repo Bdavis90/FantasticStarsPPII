@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 326872552114661775}
-  - component: {fileID: 3810004208142300971}
+  - component: {fileID: 1009781433504193481}
+  - component: {fileID: 3478848713460303296}
   - component: {fileID: 326872552114661773}
   - component: {fileID: 326872552114661774}
   - component: {fileID: 326872552114661761}
@@ -38,7 +39,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3810004208142300971
+--- !u!114 &1009781433504193481
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -47,18 +48,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 326872552114661763}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de734b7eebbe3f946920e7acf016b60a, type: 3}
+  m_Script: {fileID: 11500000, guid: 79b572dd2fcc34c48a63381bbb4dcc90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   classType: 0
   faction: 0
-  isNPC: 0
-  isAlive: 0
   spawnID: 0
-  objectName: 
-  corpseTimer: 5
-  healthMax: 0
+  baseMax: 0
   health: 0
+  rightHand: {fileID: 0}
+  gunBag: []
+  isShooting: 0
+  weaponDamage: 0
+  weaponFireRate: 0
+  weaponRange: 0
+--- !u!114 &3478848713460303296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 326872552114661763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1166d132882d2d468935b48b3c24d43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &326872552114661773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -72,16 +87,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 326872552114661772}
-  playerSpeed: 2
-  sprintMult: 2
+  playerSpeed: 5
+  sprintMult: 3
   jumpHeight: 8
   gravityValue: 15
+  healthStat: []
+  hp: 0
   jumpsMax: 1
-  HP: 0
   shootRate: 0.65
   shootDist: 5
   shootDamage: 3
-  gunstat: []
 --- !u!33 &326872552114661774
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -110,7 +125,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 3a358a822954baf46bbfd543cfdf21d7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

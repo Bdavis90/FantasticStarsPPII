@@ -62,7 +62,7 @@ public class AIController : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        FOV_Prototype_Initialization();
+        //FOV_Prototype_Initialization();
         GetComponent<SphereCollider>().radius = objectDetectionRange;
 
         //y axis Magnitudes Causes Problems, only set homepoint when grounded
@@ -569,7 +569,7 @@ public class AIController : MonoBehaviour
 
         FOV_LR.name = "FOV_Draw";
         FOV_LR.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
-        //FOV_LR.material = new Material(Shader.);
+        
         FOV_LR.positionCount = 12;
         FOV_LR.startColor = Color.red;
         FOV_LR.endColor = Color.red;

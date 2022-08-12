@@ -10,6 +10,7 @@ public class AICharacter : MonoBehaviour, ICharacterDirector
         gameObject.name = "(corpse)" + gameObject.name;
         gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
         StartCoroutine(DestroyCorpse());
+
     }
 
     public void onHit()

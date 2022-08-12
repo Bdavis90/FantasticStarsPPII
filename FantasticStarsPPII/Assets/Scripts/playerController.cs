@@ -19,14 +19,14 @@ public class playerController : MonoBehaviour, IDamageable
 
     [SerializeField] List<healthStats> healthStat = new List<healthStats>();
     [Range(0, 10)] public int hp;
-    [Range(1, 3)][SerializeField] int jumpsMax;
+    [Range(1, 3)] [SerializeField] int jumpsMax;
 
 
     [Header("-----Weapon Stats-----")]
     [Range(0.1f, 5)] [SerializeField] float shootRate;
     [Range(1, 30)] [SerializeField] int shootDist;
     [Range(1, 10)] [SerializeField] int shootDamage;
-   // [SerializeField] List<gunStats> gunstat = new List<gunStats>();
+    // [SerializeField] List<gunStats> gunstat = new List<gunStats>();
 
     Vector3 playerDir;
 
@@ -54,7 +54,7 @@ public class playerController : MonoBehaviour, IDamageable
         sprint();
 
         //how u call an Ienumerator
-       // StartCoroutine(shoot());
+        StartCoroutine(shoot());
     }
 
     void playerMovement()
@@ -165,41 +165,47 @@ public class playerController : MonoBehaviour, IDamageable
     //needs to return a 'yield'
     //a timer that makes sense
     // set a time... set a bool... do something for some time... reset the bool... etc etc etc
-    //IEnumerator shoot()
-    //{
-    //    Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * shootDist, Color.red, 0.000001f);
-    //    if (gunstat.Count != 0 && Input.GetButton("Shoot") && !isShooting)
-    //    {
-    //        isShooting = true;
-    //        //raycast is using physic lib
-    //        RaycastHit hit; //returns information of what we hit
-    //        if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f)), out hit, shootDist))
-    //        {
-    //            if (hit.collider.GetComponent<IDamageable>() != null)
-    //            {
-    //                IDamageable isDamageable = hit.collider.GetComponent<IDamageable>();
+    IEnumerator shoot()
+    {
+        if (GetComponent<CharacterSheet>().rightHand != null)
+        {
+            WeaponStats weaponEquipped = GetComponent<CharacterSheet>().rightHand;
+            Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * weaponEquipped.range, Color.red, 0.000001f);
+            if (GetComponent<CharacterSheet>().gunBag.Count != 0 && Input.GetButton("Shoot") && !isShooting)
+            {
+                isShooting = true;
+                //raycast is using physic lib
+                RaycastHit hit; //returns information of what we hit
+                if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f)), out hit, shootDist))
+                {
+                    if (hit.collider.GetComponent<IDamageable>() != null)
+                    {
+                        IDamageable isDamageable = hit.collider.GetComponent<IDamageable>();
 
-    //                if (hit.collider is SphereCollider)
-    //                {
-    //                    //head shot
-    //                    isDamageable.takeDamage(shootDamage * 2);
-    //                }
-    //                else
-    //                {
-    //                    //body shoot
-    //                    isDamageable.takeDamage(shootDamage);
-    //                }
+                        if (hit.collider is SphereCollider)
+                        {
+                            //head shot
+                            isDamageable.takeDamage(weaponEquipped.damage * 2);
+                        }
+                        else
+                        {
+                            //body shoot
+                            isDamageable.takeDamage(weaponEquipped.damage);
+                        }
 
-    //            }
-    //        }
-    //        //this is the yield return to get the ienumerator to stop complaining
-    //        //"do something wait and do it again"
-    //        yield return new WaitForSeconds(shootRate);
+                    }
+                }
+                //this is the yield return to get the ienumerator to stop complaining
+                //"do something wait and do it again"
+                yield return new WaitForSeconds(weaponEquipped.rateOfFire);
 
-    //        isShooting = false;
+                isShooting = false;
 
-    //    }
-    //}
+            }
+
+        }
+
+    }
 
 
     public void healthPickUp(int Hp, healthStats stat)
