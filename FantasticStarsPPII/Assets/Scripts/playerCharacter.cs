@@ -13,16 +13,23 @@ public class playerCharacter : MonoBehaviour, ICharacterDirector
     public void onDeath()
     {
         //Debug.Log("Player Died");
-        //StartCoroutine(DelayedPlayerSpawn());
+        StartCoroutine(DelayedPlayerSpawn());
 
         gameManager.instance.cursorLock();
         gameManager.instance.currentMenuOpen = gameManager.instance.playerDeadMenu; ;
         gameManager.instance.currentMenuOpen.SetActive(true);
+
+        GetComponent<CharacterSheet>().ResetHealth();
+        //gameObject.transform.rotation = new Quaternion(0f, 0f, 0f, 1);
+        gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.x, transform.localScale.z);
+        GetComponent<CharacterSheet>().isAlive = true;
+        //Add PLayer to Dictionary, No longer needed because the game is paused and reset on death.
+        //gameManager.instance.AddCharacter_to_GameManager(GetComponent<CharacterSheet>().GetSpawnID(), new CharacterManager(gameObject, GetComponent<CharacterSheet>()));
     }
 
     public void onHit()
     {
-        Debug.Log("Player Took Damage");
+        
         StartCoroutine(HUDFlash());
     }
 

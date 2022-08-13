@@ -233,7 +233,6 @@ public class AIController : MonoBehaviour
                 HitList = null;
 
                 cleanupOnDeath = false;
-
             }
         }
 

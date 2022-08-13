@@ -33,13 +33,13 @@ public class projectile_StaticMotion : MonoBehaviour
 
     public void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("hit");
-            if (collision.gameObject.GetComponent<IDamageable>() != null)
-            {
-                collision.gameObject.GetComponent<IDamageable>().takeDamage(weapon.damage);
-                Instantiate(weapon.effectsPrefab, gameObject.transform);
-            }
-            Destroy(gameObject);
+
+        if (collision.gameObject.GetComponent<IDamageable>() != null)
+        {
+            collision.gameObject.GetComponent<IDamageable>().takeDamage(weapon.damage);
+            Instantiate(weapon.effectsPrefab, gameObject.transform);
+        }
+        Destroy(gameObject);
 
     }
 

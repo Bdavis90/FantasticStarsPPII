@@ -196,6 +196,7 @@ public class AINavMeshController : MonoBehaviour
         }
         else
         {
+            agent.enabled = false;
             //If Dead
             if (cleanupOnDeath)
             {
@@ -259,12 +260,12 @@ public class AINavMeshController : MonoBehaviour
                     }
 
                 }
-                else
-                    Debug.Log("Unresolved Case Adding SpawnID to NPC Lists");
+                //else
+                    //Debug.Log("Unresolved Case Adding SpawnID to NPC Lists");
             }
-            else
+            //else
                 //It has an Entity Script, It should be in gameManager Spawns Dictionary
-                Debug.Log("ID Not in GameManager");
+                //Debug.Log("ID Not in GameManager");
         }
     }
     #endregion

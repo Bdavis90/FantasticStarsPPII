@@ -68,7 +68,8 @@ public class CharacterSheet : MonoBehaviour, IDamageable
             manager.onHit();
             if (health <= 0)
             {
-                gameManager.instance.character_Spawns.Remove(spawnID);
+                //Obsolete -- Remove all Dead Characters from Dictionary -- Moved to AI Specific Scirpt
+                gameManager.instance.character_Spawns.Remove(GetComponent<CharacterSheet>().GetSpawnID());
                 isAlive = false;
                 manager.onDeath();
             }
