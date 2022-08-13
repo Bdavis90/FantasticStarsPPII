@@ -87,14 +87,12 @@ MonoBehaviour:
   classType: 10
   faction: 200
   spawnID: 0
-  baseMax: 25
+  baseHealth: 0
   health: 25
   rightHand: {fileID: 0}
   gunBag: []
   isShooting: 0
-  weaponDamage: 0
-  weaponFireRate: 0
-  weaponRange: 0
+  openGate: 1
 --- !u!114 &-4339719653558676660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,7 +110,7 @@ MonoBehaviour:
   viewDistance: 10
   objectDetectionRange: 11
   pathHomeTimer_Range: 5
-  HunterMode: 0
+  HunterMode: 1
   PatrolMode: 0
   LookoutMode: 1
   agent: {fileID: 0}
@@ -120,6 +118,9 @@ MonoBehaviour:
   HitList: 
   Enemies: 
   Allies: 
+  isHunting: 0
+  isTracking: 0
+  walkRadius: 0
   homePoint: {x: 0, y: 0, z: 0}
   homePointDirection: 0
   pathHomeTimer: 0

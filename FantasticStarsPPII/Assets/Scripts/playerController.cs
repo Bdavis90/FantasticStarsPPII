@@ -53,8 +53,13 @@ public class playerController : MonoBehaviour, IDamageable
         playerMovement();
         sprint();
 
+        if (Input.GetButton("Shoot"))
+        {
+            GetComponent<CharacterSheet>().ShootWeapon();
+        }
+
         //how u call an Ienumerator
-        StartCoroutine(shoot());
+        //StartCoroutine(shoot());
     }
 
     void playerMovement()
@@ -167,6 +172,8 @@ public class playerController : MonoBehaviour, IDamageable
     // set a time... set a bool... do something for some time... reset the bool... etc etc etc
     IEnumerator shoot()
     {
+        
+
         if (GetComponent<CharacterSheet>().rightHand != null)
         {
             WeaponStats weaponEquipped = GetComponent<CharacterSheet>().rightHand;

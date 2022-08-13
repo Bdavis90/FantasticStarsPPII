@@ -22,8 +22,8 @@ public class projectile_StaticMotion : MonoBehaviour
         float ranx = Random.Range(-randomRange, randomRange);
         float rany = Random.Range(-randomRange, randomRange);
         transform.Rotate(Vector3.up * rany);
-        transform.Rotate(Vector3.right * ranx);       
-        
+        transform.Rotate(Vector3.right * ranx);
+        Instantiate(weapon.effectsPrefab, gameObject.transform);
     }
 
     void Update()
@@ -37,7 +37,7 @@ public class projectile_StaticMotion : MonoBehaviour
         if (collision.gameObject.GetComponent<IDamageable>() != null)
         {
             collision.gameObject.GetComponent<IDamageable>().takeDamage(weapon.damage);
-            Instantiate(weapon.effectsPrefab, gameObject.transform);
+            
         }
         Destroy(gameObject);
 

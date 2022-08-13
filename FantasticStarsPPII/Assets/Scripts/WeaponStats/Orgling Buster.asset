@@ -15,8 +15,8 @@ MonoBehaviour:
   projectilePrefab: {fileID: 2038664226390778062, guid: 9ca6614f77ae6d742a7eda64b5b2f34c, type: 3}
   effectsPrefab: {fileID: 3607433297180006009, guid: dbb561ef9bf036f468a16127b4bfa988, type: 3}
   damage: 7
-  rateOfFire: 25
-  range: 10
+  rateOfFire: 12
+  range: 8
   bulletSpeed: 74
   shotQuantity: 1
   accuracy: 0.74

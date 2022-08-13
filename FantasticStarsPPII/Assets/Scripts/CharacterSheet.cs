@@ -7,7 +7,6 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     [Header("----- Adjustable Fields -----")]
     public Entity_Class classType;
     public Entity_Faction faction;
-    public GameObject bulletPrefab;
     public bool isAlive { get; set; }
 
     [Header("----- Object Manager -----")]
@@ -25,9 +24,10 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     [Header("----- Weapon -----")]
     [SerializeField] bool isShooting;
-    [SerializeField] int weaponDamage;
-    [SerializeField] float weaponFireRate;
-    [SerializeField] float weaponRange;
+    public bool openGate = true;
+    //[SerializeField] int weaponDamage;
+    //[SerializeField] float weaponFireRate;
+    //[SerializeField] float weaponRange;
 
     void Start()
     {
@@ -43,9 +43,15 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Input.GetKey(KeyCode.T))
         {
-            ShootWeapon();
+            if (openGate == true)
+            {
+                openGate = false;
+                StartCoroutine(test());
+
+            }
+
         }
     }
 
@@ -68,8 +74,8 @@ public class CharacterSheet : MonoBehaviour, IDamageable
             manager.onHit();
             if (health <= 0)
             {
-                //Obsolete -- Remove all Dead Characters from Dictionary -- Moved to AI Specific Scirpt
-                gameManager.instance.character_Spawns.Remove(GetComponent<CharacterSheet>().GetSpawnID());
+                //Obsolete -- Remove all Dead Characters from Dictionary -- Moved to AICharacter Script
+                //gameManager.instance.character_Spawns.Remove(spawnID);
                 isAlive = false;
                 manager.onDeath();
             }
@@ -78,31 +84,44 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     public void ShootWeapon()
     {
-        if(rightHand != null && !isShooting)
-        {
-            
-            {
-                StartCoroutine(FireWeapon());
-            }
-            
-        }
-    }
 
+        StartCoroutine(FireWeapon());     
+      
+    }
+    public IEnumerator test()
+    {
+        if(openGate == true)
+        {
+            openGate = false;
+            yield return new WaitForSeconds(1);
+            Debug.Log("test");
+            openGate = true;
+        }
+
+    }
     IEnumerator FireWeapon()
     {
-        isShooting = true;
-        if(GetComponent<ICharacterDirector>() != null)
+        if (!isShooting && (rightHand != null))
         {
-            for (int i = 0; i < rightHand.shotQuantity; i++)
+            
+            isShooting = true;
+            if (GetComponent<ICharacterDirector>() != null)
             {
-                //Pass equippedWeapon in Parameters
-                GetComponent<ICharacterDirector>().onShoot(rightHand);
-                yield return new WaitForSeconds(weaponFireRate);
-            }
+                for (int i = 0; i < rightHand.shotQuantity; i++)
+                {
+                    Debug.Log(i);
+                    //Pass equippedWeapon in Parameters
+                    GetComponent<ICharacterDirector>().onShoot(rightHand);
+                }
 
+            }
+            yield return new WaitForSeconds(1 / rightHand.rateOfFire);
+            isShooting = false;
         }
+
+
         
-        isShooting = false;
+        
     }
 
     public bool Weapon_Pickup(WeaponStats _weapon)
@@ -125,9 +144,9 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     public void SwapWeapons(WeaponStats _Weapon)
     {
-        weaponDamage = _Weapon.damage;
-        weaponFireRate = 1 / _Weapon.rateOfFire;
-        weaponRange = _Weapon.range;
+        //weaponDamage = _Weapon.damage;
+        //weaponFireRate = _Weapon.rateOfFire;
+        //weaponRange = _Weapon.range;
     }
 }
 

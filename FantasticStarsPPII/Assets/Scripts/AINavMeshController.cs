@@ -28,6 +28,10 @@ public class AINavMeshController : MonoBehaviour
     [SerializeField] List<ushort> Enemies = new List<ushort>();
     [SerializeField] List<ushort> Allies = new List<ushort>();
 
+    [Header("----- Hunter Parameters -----")]
+    [SerializeField] bool isHunting;
+    [SerializeField] bool isTracking;
+    //[SerializeField] int walkRadius;
 
     [Header("----- Home Parameters -----")]
     [SerializeField] Vector3 homePoint;
@@ -106,6 +110,8 @@ public class AINavMeshController : MonoBehaviour
 
             if (CombatMode)
             {
+                isTracking = false;
+                isHunting = false;
                 WanderMode = false;
                 agent.stoppingDistance = 2;
                 //headPivot_OffsetCur = 0;//probabably delete this
@@ -142,7 +148,50 @@ public class AINavMeshController : MonoBehaviour
             {
                 if (HunterMode)
                 {
-                    //Search Random cooridnate within specified Radius;
+                    if (isHunting)
+                    {
+
+                        if (agent.remainingDistance <= 0.2f)
+                        {
+                            isHunting = false;
+                            isTracking = false;
+                        }
+                        else
+                        {
+                            homePoint = transform.position;
+                        }
+                            
+                    }
+                    else
+                    {
+
+                        if(Enemies.Count > 0)
+                        {
+                            //Get Random EnemyID from Enemies List;
+                            int randomIndex = Random.Range(0, Enemies.Count - 1);
+                            Vector3 Enemypoint = gameManager.instance.GetIDPosition(Enemies[(ushort)randomIndex]);
+                            agent.SetDestination(Enemypoint);
+                            isHunting = true;
+                            agent.stoppingDistance = 0;
+                        }
+                        else
+                        {
+                            if (PatrolMode)
+                            {
+                                //if Patrol mode, do patrol
+                            }
+                            else
+                            {
+                                if (!isTracking)
+                                {                                  
+                                    agent.SetDestination(SetRandomPoint());
+                                    isTracking = true;
+                                }
+
+                            }
+
+                        }  
+                    }
                 }
                 else if (PatrolMode)
                 {
@@ -150,10 +199,7 @@ public class AINavMeshController : MonoBehaviour
                 }
                 else
                 {
-                    //Mopes around the Zone AI - This merely randomizes the homepoint, and lets path back home do the work.
-                    float ranX = Random.Range(-40, 40);
-                    float ranZ = Random.Range(-40, 40);
-                    homePoint = new Vector3(ranX, transform.position.y, ranZ);
+                    homePoint = SetRandomPoint();
                     WanderMode = false;
                     if (pathHomeTimer <= 0)
                     {
@@ -427,6 +473,26 @@ public class AINavMeshController : MonoBehaviour
     #endregion
 
     #region Functionality Methods
+    private Vector3 SetRandomPoint()
+    {
+        //// Random POint;
+        //Vector3 randomPoint = (Random.insideUnitSphere * walkRadius) + transform.position;
+        //NavMeshHit hit;
+        //if(NavMesh.SamplePosition(randomPoint, out hit, walkRadius, 1))
+        //{
+        //    isTracking = true;
+        //}
+        //agent.SetDestination(hit.position);
+ 
+        NavMeshTriangulation test = NavMesh.CalculateTriangulation();
+        int randomIndex = Random.Range(0, test.indices.Length - 5);
+        Vector3 position = test.vertices[test.indices[randomIndex]];
+
+        return position;
+
+
+    }
+
     /*******************************************/
     /*         Sets character Homepoint        */
     /*******************************************/
