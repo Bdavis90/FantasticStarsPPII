@@ -51,7 +51,7 @@ public class playerController : MonoBehaviour, IDamageable
     void Update()
     {
         playerMovement();
-        sprint();
+        //sprint();
 
         if (Input.GetButton("Shoot"))
         {
@@ -133,6 +133,7 @@ public class playerController : MonoBehaviour, IDamageable
 
     public void respawn()
     {
+        
         controller.enabled = false;
         transform.position = gameManager.instance.playerSpawnPos.transform.position;
         controller.enabled = true;

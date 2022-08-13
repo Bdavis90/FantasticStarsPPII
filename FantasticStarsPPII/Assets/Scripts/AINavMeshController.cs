@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class AINavMeshController : MonoBehaviour
 {
-    [Header("----- Adjustable Fields -----")]
+    [Header("----- Required Fields -----")]
     [SerializeField] GameObject FOV_Object;
     [SerializeField] float fieldOfView;
     [SerializeField] float viewDistance;
@@ -14,7 +14,7 @@ public class AINavMeshController : MonoBehaviour
     [SerializeField] bool HunterMode;
     [SerializeField] bool PatrolMode;
     [SerializeField] bool LookoutMode;
-
+    [SerializeField] List<GameObject> PatrolPoints;
 
     [Header("----- Character General -----")]
     [SerializeField] NavMeshAgent agent;
@@ -32,6 +32,11 @@ public class AINavMeshController : MonoBehaviour
     [SerializeField] bool isHunting;
     [SerializeField] bool isTracking;
     //[SerializeField] int walkRadius;
+
+    [Header("----- Patrol Parameters -----")]
+    [SerializeField] int nextPatrolIndex;
+    [SerializeField] bool isPatrolling;
+    [SerializeField] bool isGuarding;
 
     [Header("----- Home Parameters -----")]
     [SerializeField] Vector3 homePoint;
@@ -81,6 +86,20 @@ public class AINavMeshController : MonoBehaviour
         homePoint = transform.position;
 
         homePointDirection = GlobalAngularDisplacement(transform.forward);
+
+
+        //Initialize List  of PatroleMode
+        if (PatrolMode && PatrolPoints.Count > 0)
+        {
+            if (PatrolPoints.Count < nextPatrolIndex)
+            {
+                agent.SetDestination(PatrolPoints[0].transform.position);
+            }
+            else
+                agent.SetDestination(PatrolPoints[nextPatrolIndex].transform.position);
+        }
+        else
+            PatrolMode = false;
 
     }
 
@@ -167,6 +186,7 @@ public class AINavMeshController : MonoBehaviour
 
                         if(Enemies.Count > 0)
                         {
+                            //TODO:: Lerp Rotation
                             //Get Random EnemyID from Enemies List;
                             int randomIndex = Random.Range(0, Enemies.Count - 1);
                             Vector3 Enemypoint = gameManager.instance.GetIDPosition(Enemies[(ushort)randomIndex]);
@@ -187,7 +207,6 @@ public class AINavMeshController : MonoBehaviour
                                     agent.SetDestination(SetRandomPoint());
                                     isTracking = true;
                                 }
-
                             }
 
                         }  
@@ -195,7 +214,35 @@ public class AINavMeshController : MonoBehaviour
                 }
                 else if (PatrolMode)
                 {
-                    //List of vector 3 points;
+                    agent.stoppingDistance = 0;
+                    //Get Destination from Patrol Points List and handle the index tracking
+                    if (isPatrolling == false && !isGuarding)
+                    {
+                        nextPatrolIndex++;
+                        if (nextPatrolIndex >= PatrolPoints.Count)
+                        {
+                            nextPatrolIndex = 0;
+                        }
+                        agent.SetDestination(PatrolPoints[nextPatrolIndex].transform.position);
+                        isPatrolling = true;
+
+                    }
+
+                    
+                    //When next position is reached.
+                    if(agent.remainingDistance <= 0.2f)
+                    {
+                        //Reach Destination, Start wait timer, Then Lerp Rotate to Patrolpoint object data
+                        StartCoroutine(WaitTimeDelay());
+
+                        //Lerp Rotation
+                        Vector3 PatrolPointDirection = PatrolPoints[nextPatrolIndex].transform.forward;
+                        PatrolPointDirection.y = 0;
+                        Quaternion rotate = Quaternion.LookRotation(PatrolPointDirection);
+                        transform.rotation = Quaternion.Lerp(transform.rotation, rotate, rotationSpeed * Time.fixedDeltaTime);
+                    }
+                    
+
                 }
                 else
                 {
@@ -257,6 +304,21 @@ public class AINavMeshController : MonoBehaviour
             }
         }
     }
+
+    private IEnumerator WaitTimeDelay()
+    {
+        if(isGuarding == false)
+        {
+            Debug.Log("Test1");
+            isGuarding = true;
+            yield return new WaitForSeconds(2);
+            Debug.Log("Test2");
+            isGuarding = false;
+            isPatrolling = false;
+        }
+
+    }
+
     /*******************************************/
     /*          (Collider Triggers)            */
     /*******************************************/
@@ -466,6 +528,11 @@ public class AINavMeshController : MonoBehaviour
         }
     }
     #endregion
+
+    public void LerpRotateToAngle()
+    {
+
+    }
 
     /*******************************************/
     /*          Functionality Methods          */

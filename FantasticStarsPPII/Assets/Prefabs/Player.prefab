@@ -52,16 +52,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   classType: 0
-  faction: 0
+  faction: 100
   spawnID: 0
-  baseMax: 0
-  health: 0
+  baseHealth: 10
+  health: 10
   rightHand: {fileID: 0}
   gunBag: []
   isShooting: 0
-  weaponDamage: 0
-  weaponFireRate: 0
-  weaponRange: 0
+  openGate: 1
 --- !u!114 &3478848713460303296
 MonoBehaviour:
   m_ObjectHideFlags: 0
