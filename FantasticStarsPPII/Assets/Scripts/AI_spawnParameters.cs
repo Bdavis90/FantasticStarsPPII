@@ -25,7 +25,6 @@ public class AI_spawnParameters : MonoBehaviour
         if (isSpawning && spawnCount < maxSpawns)
         {
             StartCoroutine(SpawnAICharacter());
-
         }
 
         if (refreshLockout)
@@ -53,8 +52,6 @@ public class AI_spawnParameters : MonoBehaviour
         refreshLockout = false;
         yield return new WaitForSeconds(refreshListTime);
         refreshLockout = true;
-
-
 
         for(int i = spawnList.Count - 1; i >= 0; i--)
         {
