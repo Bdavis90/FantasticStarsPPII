@@ -8,10 +8,10 @@ public class WeaponPickup : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        
-        if (other.gameObject.GetComponent<CharacterSheet>() != null)
+
+        if (other.CompareTag("Player"))
         {
-            bool isPickedup = other.gameObject.GetComponent<CharacterSheet>().Weapon_Pickup(weapon.damage, weapon.rateOfFire, weapon.range, weapon);
+            bool isPickedup = other.gameObject.GetComponent<CharacterSheet>().Weapon_Pickup(weapon);
             if (isPickedup)
             {
                 Destroy(gameObject);

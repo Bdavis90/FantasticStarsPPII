@@ -5,31 +5,44 @@ using UnityEngine.AI;
 
 public class AINavMeshController : MonoBehaviour
 {
-    [Header("----- Adjustable Fields -----")]
-    [SerializeField] GameObject FOV_Object;
-    [SerializeField] float fieldOfView;
-    [SerializeField] float viewDistance;
-    [SerializeField] float objectDetectionRange;
-    //[SerializeField] float runSpeed;
-    [SerializeField] int pathHomeTimer_Range;
-    [SerializeField] bool HunterMode;
+    [Header("----- Drag N Drops -----")]
+    [SerializeField] GameObject childGameObject_FOV;
+    [SerializeField] NavMeshAgent navMeshAgent;
+    [SerializeField] SphereCollider radarTrigger;
+
+    [Header("----- Required Fields -----")]
+    [Range(1, 101)] [SerializeField] float radarSize;
+    [Range(1, 100)] [SerializeField] float viewDistance;
+    [Range(1, 360)] [SerializeField] float fieldOfView;
+    [Range(0, 90)] [SerializeField] float headPivot_OffsetMax = 80;
+    [Range(0, 1000)] [SerializeField] int waitTimer;
+
+    [Header("----- Optionals -----")]
+    [SerializeField] bool TurnLookoutOn;
+    [SerializeField] bool HunterMode;   
     [SerializeField] bool PatrolMode;
-    [SerializeField] bool LookoutMode;
+    [SerializeField] List<GameObject> patrolNodePrefabs;
+    [SerializeField] int nextPatrolIndex;
 
-
-    [Header("----- Character General -----")]
-    [SerializeField] NavMeshAgent agent;
-    //private CharacterController controller;
+    [Header("----- Character General -----")]   
     private LineRenderer FOV_LR;
     private bool cleanupOnDeath = true;
     private bool cycleHitList = false;
 
-    [Header("----- Character Lists -----")]
+    [Header("----- Radar Lists -----")]
     [SerializeField] ushort Target;
     [SerializeField] List<ushort> HitList = new List<ushort>();
     [SerializeField] List<ushort> Enemies = new List<ushort>();
     [SerializeField] List<ushort> Allies = new List<ushort>();
 
+    [Header("----- Hunter Parameters -----")]
+    [SerializeField] bool isHunting;
+    [SerializeField] bool isTracking;
+    //[SerializeField] int walkRadius;
+
+    [Header("----- Patrol Parameters -----")]
+    [SerializeField] bool isPatrolling;
+    [SerializeField] bool isGuarding;
 
     [Header("----- Home Parameters -----")]
     [SerializeField] Vector3 homePoint;
@@ -47,26 +60,52 @@ public class AINavMeshController : MonoBehaviour
 
     [Header("----- Character Controller Fields -----")]
     [SerializeField] float rotationSpeed = 5;
-    private Vector3 moveInputs = Vector3.zero;
 
     [Header("----- Head Pivot Parameters -----")]
     [SerializeField] float headPivotTime = 2;
     [SerializeField] float headPivot_LookoutRange;
-    [Range(0, 90)] [SerializeField] float headPivot_OffsetMax = 80;
+    
     [SerializeField] float headPivot_OffsetCur;
     [SerializeField] float headPivotSpeed;
 
+    public bool TryGetTarget(out Vector3 _targetDirection)
+    {
+        bool hasTarget = false;
+        _targetDirection = new Vector3();
+        //Vector3 _targetDirection;
+        if (VerfiyTargetSpawnExists())
+        {
+            hasTarget = true;
+            _targetDirection = RetrieveObjectDirection(gameManager.instance.GetIDPosition(Target));
+
+        }
+        return hasTarget;
+    }
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        //controller = GetComponent<CharacterController>();
-        //FOV_Prototype_Initialization();
-        GetComponent<SphereCollider>().radius = objectDetectionRange;
+        //agent = GetComponent<NavMeshAgent>();
+
+        FOV_Prototype_Initialization();
+        radarTrigger.radius = radarSize;
 
         homePoint = transform.position;
 
         homePointDirection = GlobalAngularDisplacement(transform.forward);
+
+
+        //Initialize List  of PatroleMode
+        if (PatrolMode && patrolNodePrefabs.Count > 0)
+        {
+            if (patrolNodePrefabs.Count < nextPatrolIndex)
+            {
+                navMeshAgent.SetDestination(patrolNodePrefabs[0].transform.position);
+            }
+            else
+                navMeshAgent.SetDestination(patrolNodePrefabs[nextPatrolIndex].transform.position);
+        }
+        else
+            PatrolMode = false;
 
     }
 
@@ -76,7 +115,7 @@ public class AINavMeshController : MonoBehaviour
         if (GetComponent<CharacterSheet>().isAlive)
         {
             //Debug Code - Field of View sight Lines
-            //FOV_Prototype_Update();
+            FOV_Prototype_Update();
             //Detect Enemy
             Check_EnterCombatMode();
 
@@ -96,64 +135,66 @@ public class AINavMeshController : MonoBehaviour
 
             if (CombatMode)
             {
+                isTracking = false;
+                isHunting = false;
                 WanderMode = false;
-                agent.stoppingDistance = 2;
+                navMeshAgent.stoppingDistance = 2;
                 //headPivot_OffsetCur = 0;//probabably delete this
 
                 if (pathHomeTimer <= 0)
                 {
                     //Delay Timer to Return to home point
-                    pathHomeTimer = Random.Range(0, pathHomeTimer_Range);
+                    pathHomeTimer = Random.Range(0, waitTimer);
                 }
 
                 //Fancy Destination done with NavMesh
                 if (VerfiyTargetSpawnExists())
                 {
-                    agent.SetDestination(gameManager.instance.GetIDPosition(Target));
+                    navMeshAgent.SetDestination(gameManager.instance.GetIDPosition(Target));
                 }
                 
                 //Combat Head Rotation keeps head rotated on Target
-                LockHeadToTarget(RelativeAngle(agent.nextPosition));
+                LockHeadToTarget(RelativeAngle(navMeshAgent.nextPosition));
 
-                if(agent.remainingDistance <= agent.stoppingDistance)
+                if(navMeshAgent.remainingDistance <= 15)//agent.stoppingDistance)
                 {
                     LerpRotateToTarget();
 
                     if (VerfiyTargetSpawnExists())
                     {
-                        IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
-                        damageable.takeDamage(1);
+                        GetComponent<CharacterSheet>().ShootWeapon();
+                        //IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
+                        //damageable.takeDamage(1);
                     }
                 }
 
             }
-            else if (WanderMode)
+            else if (WanderMode) //Non-Combat Day Job
             {
                 if (HunterMode)
                 {
-                    //Search Random cooridnate within specified Radius;
+                    //Detects and Hunts nearby Enemies - Can be used with Patrol
+                    DoHunterMode();
                 }
                 else if (PatrolMode)
                 {
-                    //List of vector 3 points;
+                    //Patrols a List of predefined Points
+                    DoPatrolMode();
                 }
                 else
                 {
-                    //Mopes around the Zone AI - This merely randomizes the homepoint, and lets path back home do the work.
-                    float ranX = Random.Range(-40, 40);
-                    float ranZ = Random.Range(-40, 40);
-                    homePoint = new Vector3(ranX, transform.position.y, ranZ);
+                    //Mopes Around zone using end of Combat loop code
+                    homePoint = SetRandomPoint();
                     WanderMode = false;
                     if (pathHomeTimer <= 0)
                     {
-                        pathHomeTimer = Random.Range(0, pathHomeTimer_Range);
+                        pathHomeTimer = Random.Range(0, waitTimer);
                     }
-
                 }
 
-                if (LookoutMode)
+                //Simulates Head Movement while out of Combat
+                if (TurnLookoutOn)
                 {
-                    //Simulates Head Movement while out of Combat
                     DoLookOutMode();
                 }
             }
@@ -163,20 +204,19 @@ public class AINavMeshController : MonoBehaviour
                 if (pathHomeTimer > 0)
                 {
                     pathHomeTimer -= Time.fixedDeltaTime;
-                    agent.isStopped = true;
+                    navMeshAgent.isStopped = true;
                 }
                 else
                 {
-                    agent.isStopped = false;
+                    navMeshAgent.isStopped = false;
 
-                    agent.SetDestination(homePoint);
-                    agent.stoppingDistance = 0;
+                    navMeshAgent.SetDestination(homePoint);
+                    navMeshAgent.stoppingDistance = 0;
 
-                    if (agent.remainingDistance <= 0.2f)
+                    if (navMeshAgent.remainingDistance <= 0.2f)
                     {
                         WanderMode = true;
-                        agent.stoppingDistance = 2;
-                    
+                        navMeshAgent.stoppingDistance = 2;
                     }
 
                 }
@@ -185,10 +225,11 @@ public class AINavMeshController : MonoBehaviour
         }
         else
         {
+            navMeshAgent.enabled = false;
             //If Dead
             if (cleanupOnDeath)
             {
-                Destroy(FOV_Object);
+                Destroy(childGameObject_FOV);
                 GetComponent<SphereCollider>().enabled = false;
                 Allies = null;
                 Enemies = null;
@@ -199,6 +240,33 @@ public class AINavMeshController : MonoBehaviour
             }
         }
     }
+
+    private IEnumerator HuntRandomDestination()
+    {
+        if (isTracking == false)
+        {
+            isTracking = true;
+            navMeshAgent.SetDestination(SetRandomPoint());
+            yield return new WaitForSeconds(waitTimer);
+            isTracking = false;
+        }
+
+    }
+
+    private IEnumerator WaitTimeDelay()
+    {
+        if(isGuarding == false)
+        {
+            Debug.Log("Test1");
+            isGuarding = true;
+            yield return new WaitForSeconds(waitTimer);
+            Debug.Log("Test2");
+            isGuarding = false;
+            isPatrolling = false;
+        }
+
+    }
+
     /*******************************************/
     /*          (Collider Triggers)            */
     /*******************************************/
@@ -248,12 +316,12 @@ public class AINavMeshController : MonoBehaviour
                     }
 
                 }
-                else
-                    Debug.Log("Unresolved Case Adding SpawnID to NPC Lists");
+                //else
+                    //Debug.Log("Unresolved Case Adding SpawnID to NPC Lists");
             }
-            else
+            //else
                 //It has an Entity Script, It should be in gameManager Spawns Dictionary
-                Debug.Log("ID Not in GameManager");
+                //Debug.Log("ID Not in GameManager");
         }
     }
     #endregion
@@ -341,22 +409,99 @@ public class AINavMeshController : MonoBehaviour
 
                             if (gameManager.instance.character_Spawns.ContainsKey(enemyID))
                             {
-                                RaycastHit hit;
-                                if (Physics.Raycast(transform.position, enemyDirection.normalized, out hit))
-                                {
-                                    if (hit.transform.gameObject == enemy)
-                                    {
-                                        Target = enemyID;
-                                        CombatMode = true;
-                                        HitList.Add(enemyID);
-                                    }
-                                }
+                                
+                                 Target = enemyID;
+                                 CombatMode = true;
+                                 HitList.Add(enemyID);
+
                             }
 
                         }
                     }
                 }
                 Enemies = UpdatedList;
+            }
+        }
+    }
+    #endregion
+
+    /*******************************************/
+    /*           Patrol Mode Behavior          */
+    /*******************************************/
+    #region DoPatrolMode()
+    private void DoPatrolMode()
+    {
+        navMeshAgent.stoppingDistance = 0;
+        //Get Destination from Patrol Points List and handle the index tracking
+        if (isPatrolling == false && !isGuarding)
+        {
+            nextPatrolIndex++;
+            if (nextPatrolIndex >= patrolNodePrefabs.Count)
+            {
+                nextPatrolIndex = 0;
+            }
+            navMeshAgent.SetDestination(patrolNodePrefabs[nextPatrolIndex].transform.position);
+            isPatrolling = true;
+
+        }
+
+        //When next position is reached.
+        if (navMeshAgent.remainingDistance <= 0.2f)
+        {
+            //Reach Destination, Start wait timer, Then Lerp Rotate to Patrolpoint object data
+            StartCoroutine(WaitTimeDelay());
+
+            LerpRotateToTarget(patrolNodePrefabs[nextPatrolIndex].transform.forward);
+            //Lerp Rotation
+
+        }
+    }
+    #endregion
+    /*******************************************/
+    /*           Hunter Mode Behavior          */
+    /*******************************************/
+    #region DoHunterMode()
+    private void DoHunterMode()
+    {
+        if (isHunting)
+        {
+            //Destination is set
+            if (navMeshAgent.remainingDistance <= 4f)
+            {
+                isHunting = false;
+                isTracking = false;
+            }
+            else
+            {
+                //TODO:: Lerp Rotation
+                //set homepoint here (lots of updates)
+            }
+        }
+        else
+        {
+            if (Enemies.Count > 0) //Set a Destination enemies in Radar (isHunting to True)
+            {
+
+                //Get Random EnemyID from Enemies List;
+                int randomIndex = Random.Range(0, Enemies.Count - 1);
+                Vector3 Enemypoint = gameManager.instance.GetIDPosition(Enemies[(ushort)randomIndex]);
+                navMeshAgent.SetDestination(Enemypoint);
+                isHunting = true;
+                navMeshAgent.stoppingDistance = 0;
+                homePoint = transform.position;
+            }
+            else //if Radar is empty- patrol duty, or Random Point
+            {
+                if (PatrolMode)
+                {
+                    //Do his Day Job
+                    DoPatrolMode();
+                }
+                else
+                {
+                    //Set Random navmesh destion on a Interval
+                    StartCoroutine(HuntRandomDestination());
+                }
             }
         }
     }
@@ -414,12 +559,42 @@ public class AINavMeshController : MonoBehaviour
     }
     #endregion
 
+    public void LerpRotateToTarget(Vector3 _direction)
+    {
+        _direction.y = 0;
+        //Vector3 PatrolPointDirection = _direction;
+        //PatrolPointDirection.y = 0;
+        Quaternion rotate = Quaternion.LookRotation(_direction);
+        transform.rotation = Quaternion.Lerp(transform.rotation, rotate, rotationSpeed * Time.fixedDeltaTime);
+    }
+
     /*******************************************/
     /*          Functionality Methods          */
     /*******************************************/
     #endregion
 
     #region Functionality Methods
+    private Vector3 SetRandomPoint()
+    {
+        //// Random POint;
+        //Vector3 randomPoint = (Random.insideUnitSphere * walkRadius) + transform.position;
+        //NavMeshHit hit;
+        //if(NavMesh.SamplePosition(randomPoint, out hit, walkRadius, 1))
+        //{
+        //    isTracking = true;
+        //}
+        //agent.SetDestination(hit.position);
+ 
+        NavMeshTriangulation test = NavMesh.CalculateTriangulation();
+        int randomIndex = Random.Range(0, test.indices.Length - 5);
+        Vector3 position = test.vertices[test.indices[randomIndex]];
+        //Debug.Log(test.vertices.Length);
+        //Debug.Log("Random Point Selected");
+        return position;
+
+
+    }
+
     /*******************************************/
     /*         Sets character Homepoint        */
     /*******************************************/
@@ -521,8 +696,12 @@ public class AINavMeshController : MonoBehaviour
         else
         {
             //If not in world, clean Lists
-            Allies.Remove(Target);
-            Enemies.Remove(Target);
+            if(Allies != null || Enemies != null)
+            {
+                Allies.Remove(Target);
+                Enemies.Remove(Target);
+            }
+
             Target = 0;
             CombatMode = false;
         }
@@ -540,13 +719,15 @@ public class AINavMeshController : MonoBehaviour
     /*       Field of View Initialization      */
     /*******************************************/
     private void FOV_Prototype_Initialization()
-    {
-        FOV_LR = FOV_Object.AddComponent<LineRenderer>();
+    {  
+        FOV_LR = childGameObject_FOV.AddComponent<LineRenderer>();
         FOV_LR.name = "FOV_Draw";
-        FOV_LR.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
+
+        Material test = new Material(Shader.Find("Standard"));
+        test.color = Color.red;
+
+        FOV_LR.material = new Material(test);
         FOV_LR.positionCount = 12;
-        FOV_LR.startColor = Color.red;
-        FOV_LR.endColor = Color.red;
         FOV_LR.startWidth = 0.1f;
         FOV_LR.endWidth = 0.1f;
         FOV_LR.loop = true;

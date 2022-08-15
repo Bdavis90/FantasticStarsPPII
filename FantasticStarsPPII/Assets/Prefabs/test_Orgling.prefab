@@ -87,14 +87,12 @@ MonoBehaviour:
   classType: 10
   faction: 200
   spawnID: 0
-  baseMax: 0
-  health: 0
-  rightHand: {fileID: 0}
+  baseHealth: 25
+  health: 25
+  rightHand: {fileID: 11400000, guid: 1703aa380090a2d4e841ce64fc571f24, type: 2}
   gunBag: []
   isShooting: 0
-  weaponDamage: 0
-  weaponFireRate: 0
-  weaponRange: 0
+  openGate: 1
 --- !u!114 &-4339719653558676660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,19 +105,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0373de95307baa7469f0ffbe362a40bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FOV_Object: {fileID: 1160844932645662232}
-  fieldOfView: 90
+  childGameObject_FOV: {fileID: 1160844932645662232}
+  navMeshAgent: {fileID: -379368337710404579}
+  radarTrigger: {fileID: 2628173920337941719}
+  radarSize: 15
   viewDistance: 10
-  objectDetectionRange: 11
-  pathHomeTimer_Range: 5
-  HunterMode: 0
+  fieldOfView: 90
+  headPivot_OffsetMax: 80
   PatrolMode: 0
+  patrolNodePrefabs: []
+  nextPatrolIndex: 0
+  HunterMode: 1
   LookoutMode: 1
-  agent: {fileID: 0}
+  waitTimer: 0
   Target: 0
   HitList: 
   Enemies: 
   Allies: 
+  isHunting: 0
+  isTracking: 0
+  isPatrolling: 0
+  isGuarding: 0
   homePoint: {x: 0, y: 0, z: 0}
   homePointDirection: 0
   pathHomeTimer: 0
@@ -131,7 +137,6 @@ MonoBehaviour:
   rotationSpeed: 5
   headPivotTime: 2
   headPivot_LookoutRange: 0
-  headPivot_OffsetMax: 80
   headPivot_OffsetCur: 0
   headPivotSpeed: 0
 --- !u!114 &7228830192590645744

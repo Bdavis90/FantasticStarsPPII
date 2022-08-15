@@ -10,7 +10,8 @@ public class AItestController : MonoBehaviour
     [SerializeField] float baseSpeed;
 
     [SerializeField] float sprintSpeed = 1;
-    private bool isSprinting;
+
+    
 
     [SerializeField] float buoyancyValue = 40;
     [SerializeField] float jumpForce = 2;
@@ -28,6 +29,7 @@ public class AItestController : MonoBehaviour
 
     void Start()
     {
+        
         controller = GetComponent<CharacterController>();
     }
 
@@ -91,13 +93,13 @@ public class AItestController : MonoBehaviour
     {
         if (Input.GetButtonDown("Fire3"))
         {
-            isSprinting = true;
+            //isSprinting = true;
             sprintSpeed = 2;
         }
 
         if (Input.GetButtonUp("Fire3"))
         {
-            isSprinting = false;
+            //isSprinting = false;
             sprintSpeed = 1;
         }
 

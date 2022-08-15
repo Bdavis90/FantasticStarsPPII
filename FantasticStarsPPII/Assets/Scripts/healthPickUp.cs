@@ -10,9 +10,8 @@ public class healthPickUp : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            gameManager.instance.playerScript.healthPickUp(healthStat.healthPoints, healthStat);
+            other.gameObject.GetComponent<CharacterSheet>().healthPickUp(healthStat.healthPoints);
             Destroy(gameObject);
-
         }
     }
 }
