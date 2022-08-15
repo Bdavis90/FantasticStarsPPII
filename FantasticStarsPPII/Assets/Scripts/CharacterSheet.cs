@@ -60,9 +60,11 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         return spawnID;
     }
 
-    public void ResetHealth()
+    public void ResetCharacter()
     {
         health = baseHealth;
+        StartCoroutine(test());
+
     }
 
     public void takeDamage(int _damage)
@@ -74,8 +76,8 @@ public class CharacterSheet : MonoBehaviour, IDamageable
             manager.onHit();
             if (health <= 0)
             {
-                //Obsolete -- Remove all Dead Characters from Dictionary -- Moved to AICharacter Script
-                //gameManager.instance.character_Spawns.Remove(spawnID);
+                //Remove all Dead Characters from Dictionary -- Moved to AICharacter Script
+                gameManager.instance.character_Spawns.Remove(spawnID);
                 isAlive = false;
                 manager.onDeath();
             }
@@ -94,7 +96,8 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         {
             openGate = false;
             yield return new WaitForSeconds(1);
-            Debug.Log("test");
+            gameManager.instance.AddCharacter_to_GameManager(spawnID, new CharacterManager(gameObject, this));
+            isAlive = true;
             openGate = true;
         }
 

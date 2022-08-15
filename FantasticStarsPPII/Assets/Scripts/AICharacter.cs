@@ -13,7 +13,7 @@ public class AICharacter : MonoBehaviour, ICharacterDirector
     [SerializeField] int corpseTimer = 5;
     public void onDeath()
     {
-        gameManager.instance.character_Spawns.Remove(GetComponent<CharacterSheet>().GetSpawnID());
+        //gameManager.instance.character_Spawns.Remove(GetComponent<CharacterSheet>().GetSpawnID());
         gameObject.name = "(corpse)" + gameObject.name;
         gameObject.transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y / 2, transform.localScale.z);
         StartCoroutine(DestroyCorpse());
