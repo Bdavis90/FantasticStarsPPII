@@ -13,7 +13,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     //faction dictates if the AI will kill the player aka team
     public Entity_Faction faction; 
     public bool isAlive { get; set; }
-
+    
     [Header("----- Object Manager -----")]
     //for the dictionary - at spawn character is given a unique id for AI to find AI
     [SerializeField] ushort spawnID;
@@ -25,9 +25,10 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     [Header("----- Inventory -----")]
     // this means what weapon is equipped
     [SerializeField] public WeaponStats rightHand = null;
+    //[SerializeField] public WeaponStats leftHand = null;
     // this is where weapons are stored aka inventory
     [SerializeField] public List<WeaponStats> gunBag = new List<WeaponStats>();
-
+    [SerializeField] public int gunBagIterator;
 
     [Header("----- Weapon -----")]
     [SerializeField] bool isShooting;
@@ -44,6 +45,25 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         gameManager.instance.AddCharacter_to_GameManager(spawnID, new CharacterManager(gameObject, this));
 
     }
+
+    public void IterateGunBagIterator(int _iteration)
+    {
+        gunBagIterator++;
+        if(gunBag.Count != 0)
+        {
+            if(gunBagIterator >= gunBag.Count)
+            {
+                gunBagIterator = 0;
+            }
+            if(gunBagIterator < 0)
+            {
+                gunBagIterator = gunBag.Count - 1;
+            }
+            rightHand = gunBag[gunBagIterator];
+        }
+    }
+
+    
 
     public ushort GetSpawnID()
     {
@@ -112,6 +132,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         bool isPickedup = false;
         if(rightHand == null)
         {
+            
             rightHand = _weapon;
             //SwapWeapons(_weapon);
             isPickedup = true;

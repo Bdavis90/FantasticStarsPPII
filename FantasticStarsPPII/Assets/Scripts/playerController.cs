@@ -57,6 +57,21 @@ public class playerController : MonoBehaviour//, IDamageable
         {
             GetComponent<CharacterSheet>().ShootWeapon();
         }
+        
+
+        //Away from me
+        if (Input.GetAxis("Mouse ScrollWheel") > 0)
+        {
+            //list count + 1
+            GetComponent<CharacterSheet>().IterateGunBagIterator(1);
+
+        }
+        //Towards Me
+        if(Input.GetAxis("Mouse ScrollWheel") < 0)
+        {
+            // list count -1
+            GetComponent<CharacterSheet>().IterateGunBagIterator(-1);
+        }
 
         //how u call an Ienumerator
         //StartCoroutine(shoot());
