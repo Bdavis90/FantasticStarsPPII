@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Gun - Rifle
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 2038664226390778062, guid: 9ca6614f77ae6d742a7eda64b5b2f34c, type: 3}
-  effectsPrefab: {fileID: 3607433297180006009, guid: dbb561ef9bf036f468a16127b4bfa988, type: 3}
-  damage: 5
-  rateOfFire: 20
-  range: 15
+  effectsPrefab: {fileID: 3607433297180006009, guid: 01054d0921d984e4ab4ef4a7d8f73ad2, type: 3}
+  damage: 10
+  rateOfFire: 10
+  range: 5
   bulletSpeed: 100
   shotQuantity: 1
   accuracy: 1
