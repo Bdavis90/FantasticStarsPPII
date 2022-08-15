@@ -16,7 +16,7 @@ MonoBehaviour:
   effectsPrefab: {fileID: 3607433297180006009, guid: 01054d0921d984e4ab4ef4a7d8f73ad2, type: 3}
   damage: 10
   rateOfFire: 10
-  range: 5
+  range: 15
   bulletSpeed: 100
   shotQuantity: 1
   accuracy: 1

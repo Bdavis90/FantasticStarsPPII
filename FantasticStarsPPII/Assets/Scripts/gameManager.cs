@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class gameManager : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class gameManager : MonoBehaviour
 
     public GameObject playerDamageFlash;
     public GameObject playerDeadMenu;
+    public Image playerHPBar;
 
     public GameObject playerSpawnPos;
 
