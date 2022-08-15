@@ -34,7 +34,8 @@ public class gameManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetButtonDown("Cancel") && playerScript.hp > 0)
+
+        if (Input.GetButtonDown("Cancel") && (player.GetComponent<CharacterSheet>().HPCheck()) > 0)
         {
             isPaused = !isPaused;
             currentMenuOpen = pauseMenu;

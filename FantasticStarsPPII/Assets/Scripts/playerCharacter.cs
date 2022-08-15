@@ -20,13 +20,15 @@ public class playerCharacter : MonoBehaviour, ICharacterDirector
 
     public void onHit()
     {
-        
         StartCoroutine(HUDFlash());
     }
 
     public void onShoot(WeaponStats _equippedWeapon)
     {
+        Debug.Log(_equippedWeapon);
+        Debug.Log(Camera.main);
         GameObject projectile = Instantiate(_equippedWeapon.projectilePrefab, Camera.main.transform.position + (transform.forward * 2), Camera.main.transform.rotation);
+        Debug.Log(projectile);
         projectile.GetComponent<projectile_StaticMotion>().SetWeaponStats(_equippedWeapon);
     }
    

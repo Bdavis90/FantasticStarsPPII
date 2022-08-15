@@ -588,8 +588,8 @@ public class AINavMeshController : MonoBehaviour
         NavMeshTriangulation test = NavMesh.CalculateTriangulation();
         int randomIndex = Random.Range(0, test.indices.Length - 5);
         Vector3 position = test.vertices[test.indices[randomIndex]];
-        Debug.Log(test.vertices.Length);
-        Debug.Log("Random Point Selected");
+        //Debug.Log(test.vertices.Length);
+        //Debug.Log("Random Point Selected");
         return position;
 
 

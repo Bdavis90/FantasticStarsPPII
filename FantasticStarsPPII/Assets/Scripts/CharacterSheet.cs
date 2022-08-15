@@ -4,30 +4,34 @@ using UnityEngine;
 
 public class CharacterSheet : MonoBehaviour, IDamageable
 {
+    // player and AI attribiutes derive from the Character Sheet ie health and weapons
+
+
     [Header("----- Adjustable Fields -----")]
     public Entity_Class classType;
-    public Entity_Faction faction;
+
+    //faction dictates if the AI will kill the player aka team
+    public Entity_Faction faction; 
     public bool isAlive { get; set; }
 
     [Header("----- Object Manager -----")]
+    //for the dictionary - at spawn character is given a unique id for AI to find AI
     [SerializeField] ushort spawnID;
-    //[SerializeField] string objectName = null;
 
     [Header("----- Attributes -----")]
     [SerializeField] int baseHealth;
     [SerializeField] int health;
 
     [Header("----- Inventory -----")]
+    // this means what weapon is equipped
     [SerializeField] public WeaponStats rightHand = null;
+    // this is where weapons are stored aka inventory
     [SerializeField] public List<WeaponStats> gunBag = new List<WeaponStats>();
-    
+
 
     [Header("----- Weapon -----")]
     [SerializeField] bool isShooting;
-    public bool openGate = true;
-    //[SerializeField] int weaponDamage;
-    //[SerializeField] float weaponFireRate;
-    //[SerializeField] float weaponRange;
+    //public bool openGate = true;
 
     void Start()
     {
@@ -41,20 +45,6 @@ public class CharacterSheet : MonoBehaviour, IDamageable
 
     }
 
-    private void Update()
-    {
-        if (Input.GetKey(KeyCode.T))
-        {
-            if (openGate == true)
-            {
-                openGate = false;
-                StartCoroutine(test());
-
-            }
-
-        }
-    }
-
     public ushort GetSpawnID()
     {
         return spawnID;
@@ -63,7 +53,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     public void ResetCharacter()
     {
         health = baseHealth;
-        StartCoroutine(test());
+        StartCoroutine(addPlayerToDictionary());
 
     }
 
@@ -90,18 +80,13 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         StartCoroutine(FireWeapon());     
       
     }
-    public IEnumerator test()
+    public IEnumerator addPlayerToDictionary()
     {
-        if(openGate == true)
-        {
-            openGate = false;
             yield return new WaitForSeconds(1);
             gameManager.instance.AddCharacter_to_GameManager(spawnID, new CharacterManager(gameObject, this));
             isAlive = true;
-            openGate = true;
-        }
-
     }
+
     IEnumerator FireWeapon()
     {
         if (!isShooting && (rightHand != null))
@@ -112,7 +97,6 @@ public class CharacterSheet : MonoBehaviour, IDamageable
             {
                 for (int i = 0; i < rightHand.shotQuantity; i++)
                 {
-                    Debug.Log(i);
                     //Pass equippedWeapon in Parameters
                     GetComponent<ICharacterDirector>().onShoot(rightHand);
                 }
@@ -120,11 +104,7 @@ public class CharacterSheet : MonoBehaviour, IDamageable
             }
             yield return new WaitForSeconds(1 / rightHand.rateOfFire);
             isShooting = false;
-        }
-
-
-        
-        
+        }  
     }
 
     public bool Weapon_Pickup(WeaponStats _weapon)
@@ -151,6 +131,16 @@ public class CharacterSheet : MonoBehaviour, IDamageable
         //weaponFireRate = _Weapon.rateOfFire;
         //weaponRange = _Weapon.range;
     }
+
+    public void healthPickUp(int Hp)
+    {
+        health += Hp;
+    }
+    public int HPCheck()
+    {
+        return health;
+    }
+
 }
 
 
