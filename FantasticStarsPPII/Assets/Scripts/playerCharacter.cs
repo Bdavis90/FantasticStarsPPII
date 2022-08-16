@@ -21,6 +21,9 @@ public class playerCharacter : MonoBehaviour, ICharacterDirector
     public void onHit()
     {
         StartCoroutine(HUDFlash());
+        gameManager.instance.playerHPBar.fillAmount = (float)(GetComponent<CharacterSheet>().HPCheck())/ (float)(GetComponent<CharacterSheet>().MaxHPCheck());
+        
+            
     }
 
     public void onShoot(WeaponStats _equippedWeapon)

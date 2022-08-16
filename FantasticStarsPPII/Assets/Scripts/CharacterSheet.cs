@@ -80,7 +80,6 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     public void takeDamage(int _damage)
     {
         health -= _damage;
-        gameManager.instance.playerHPBar.fillAmount = (float)health / (float) baseHealth;
         if (GetComponent<ICharacterDirector>() != null)
         {
             ICharacterDirector manager = GetComponent<ICharacterDirector>();
@@ -162,6 +161,11 @@ public class CharacterSheet : MonoBehaviour, IDamageable
     public int HPCheck()
     {
         return health;
+    }
+
+    public int MaxHPCheck()
+    {
+        return baseHealth;
     }
 
 }
