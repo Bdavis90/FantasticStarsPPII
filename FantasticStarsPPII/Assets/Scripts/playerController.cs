@@ -37,8 +37,6 @@ public class playerController : MonoBehaviour//, IDamageable
     bool isSprinting = false;
     bool isShooting = false;
     private int hpOrig;
-    bool isleaningRight = false;
-    bool isleaningLeft = false;
 
 
 
