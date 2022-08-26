@@ -22,7 +22,8 @@ public class buttonFunctions : MonoBehaviour
 
     public void respawn()
     {
-        gameManager.instance.playerScript.resetHP();
+        //gameManager.instance.playerScript.resetHP();
+        gameManager.instance.player.GetComponent<CharacterSheet>().ResetCharacter();
         gameManager.instance.playerScript.respawn();
         gameManager.instance.cursorUnlock();
     }

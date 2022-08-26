@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class playerController : MonoBehaviour, IDamageable
+public class playerController : MonoBehaviour//, IDamageable
 {
 
     [Header("-----Components-----")]
@@ -51,10 +51,15 @@ public class playerController : MonoBehaviour, IDamageable
     void Update()
     {
         playerMovement();
-        sprint();
+        //sprint();
+
+        if (Input.GetButton("Shoot"))
+        {
+            GetComponent<CharacterSheet>().ShootWeapon();
+        }
 
         //how u call an Ienumerator
-        StartCoroutine(shoot());
+        //StartCoroutine(shoot());
     }
 
     void playerMovement()
@@ -128,6 +133,7 @@ public class playerController : MonoBehaviour, IDamageable
 
     public void respawn()
     {
+        
         controller.enabled = false;
         transform.position = gameManager.instance.playerSpawnPos.transform.position;
         controller.enabled = true;
@@ -167,6 +173,8 @@ public class playerController : MonoBehaviour, IDamageable
     // set a time... set a bool... do something for some time... reset the bool... etc etc etc
     IEnumerator shoot()
     {
+        
+
         if (GetComponent<CharacterSheet>().rightHand != null)
         {
             WeaponStats weaponEquipped = GetComponent<CharacterSheet>().rightHand;
@@ -176,14 +184,16 @@ public class playerController : MonoBehaviour, IDamageable
                 isShooting = true;
                 //raycast is using physic lib
                 RaycastHit hit; //returns information of what we hit
-                if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f)), out hit, shootDist))
+                if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)), out hit, shootDist))
                 {
+                    
                     if (hit.collider.GetComponent<IDamageable>() != null)
                     {
                         IDamageable isDamageable = hit.collider.GetComponent<IDamageable>();
 
                         if (hit.collider is SphereCollider)
                         {
+                            Debug.Log(weaponEquipped.damage);
                             //head shot
                             isDamageable.takeDamage(weaponEquipped.damage * 2);
                         }

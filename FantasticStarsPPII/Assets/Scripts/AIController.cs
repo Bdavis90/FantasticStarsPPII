@@ -58,11 +58,23 @@ public class AIController : MonoBehaviour
     [SerializeField] float headPivot_OffsetCur;
     [SerializeField] float headPivotSpeed;
 
+    public bool TryGetTarget(out Vector3 _targetDirection)
+    {
+        bool hasTarget = false;
+        _targetDirection = new Vector3();
+        //Vector3 _targetDirection;
+        if (VerfiyTargetSpawnExists())
+        {
+            hasTarget = true;
+            _targetDirection = RetrieveObjectDirection(gameManager.instance.GetIDPosition(Target));
 
+        }
+        return hasTarget;
+    }
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        //FOV_Prototype_Initialization();
+        FOV_Prototype_Initialization();
         GetComponent<SphereCollider>().radius = objectDetectionRange;
 
         //y axis Magnitudes Causes Problems, only set homepoint when grounded
@@ -126,7 +138,7 @@ public class AIController : MonoBehaviour
                 transform.Rotate(Vector3.up, destinationAngle * rotationSpeed * Time.fixedDeltaTime);
 
                 //Move to Destination or Attack Here
-                if (RetrieveObjectDirection(nextMoveDestination).magnitude > 2)
+                if (RetrieveObjectDirection(nextMoveDestination).magnitude > 7)
                 {
                     controller.Move(transform.forward * runSpeed * Time.fixedDeltaTime);
                 }
@@ -134,9 +146,10 @@ public class AIController : MonoBehaviour
                 {
                     if (VerfiyTargetSpawnExists())
                     {
-                        IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
-                        damageable.takeDamage(1);
-                        //cycleHitList = true; DELETE
+                        GetComponent<CharacterSheet>().ShootWeapon();
+                        //IDamageable damageable = gameManager.instance.character_Spawns.GetValueOrDefault(Target).GetGameObject().GetComponent<IDamageable>();
+                        //damageable.takeDamage(1);
+                        
                     }
                 }
 
@@ -220,7 +233,6 @@ public class AIController : MonoBehaviour
                 HitList = null;
 
                 cleanupOnDeath = false;
-
             }
         }
 
@@ -542,9 +554,11 @@ public class AIController : MonoBehaviour
         }
         else
         {
-            //If not in world, clean Lists
-            Allies.Remove(Target);
-            Enemies.Remove(Target);
+            if (Allies != null || Enemies != null)
+            {
+                Allies.Remove(Target);
+                Enemies.Remove(Target);
+            }
             Target = 0;
             CombatMode = false;
         }
@@ -563,16 +577,14 @@ public class AIController : MonoBehaviour
     /*******************************************/
     private void FOV_Prototype_Initialization()
     {
-        //FOV_Object = new GameObject();
-        //FOV_Object.name = "Entity FOV";
         FOV_LR = FOV_Object.AddComponent<LineRenderer>();
-
         FOV_LR.name = "FOV_Draw";
-        FOV_LR.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
-        
+
+        Material test = new Material(Shader.Find("Standard"));
+        test.color = Color.red;
+
+        FOV_LR.material = new Material(test);
         FOV_LR.positionCount = 12;
-        FOV_LR.startColor = Color.red;
-        FOV_LR.endColor = Color.red;
         FOV_LR.startWidth = 0.1f;
         FOV_LR.endWidth = 0.1f;
         FOV_LR.loop = true;
